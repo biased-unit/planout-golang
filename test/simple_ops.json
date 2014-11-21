@@ -1,0 +1,335 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "a",
+      "value": 10
+    },
+    {
+      "op": "set",
+      "var": "b",
+      "value": 3.14
+    },
+    {
+      "op": "set",
+      "var": "c",
+      "value": "hello"
+    },
+    {
+      "op": "set",
+      "var": "d",
+      "value": {
+        "op": "array",
+        "values": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "e",
+      "value": {
+        "op": "array",
+        "values": [
+          {
+            "op": "get",
+            "var": "a"
+          },
+          {
+            "op": "get",
+            "var": "b"
+          },
+          {
+            "op": "get",
+            "var": "d"
+          }
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "f",
+      "value": {
+        "values": [
+          {
+            "op": "get",
+            "var": "e"
+          }
+        ],
+        "op": "length"
+      }
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "equals",
+            "left": {
+              "op": "get",
+              "var": "f"
+            },
+            "right": 3
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "g",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "if": true,
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "g",
+                "value": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": ">=",
+            "left": {
+              "op": "get",
+              "var": "f"
+            },
+            "right": 5
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "h",
+                "value": 0
+              }
+            ]
+          }
+        },
+        {
+          "if": true,
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "h",
+                "value": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "<=",
+            "left": {
+              "op": "get",
+              "var": "b"
+            },
+            "right": 5
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "i",
+                "value": 1
+              }
+            ]
+          }
+        },
+        {
+          "if": true,
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "i",
+                "value": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "set",
+      "var": "j",
+      "value": {
+        "op": "sum",
+        "values": [
+          {
+            "op": "get",
+            "var": "a"
+          },
+          {
+            "op": "get",
+            "var": "b"
+          }
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "k",
+      "value": {
+        "op": "product",
+        "values": [
+          {
+            "op": "get",
+            "var": "a"
+          },
+          {
+            "op": "get",
+            "var": "b"
+          }
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "l",
+      "value": {
+        "op": "/",
+        "left": {
+          "op": "get",
+          "var": "a"
+        },
+        "right": {
+          "op": "get",
+          "var": "b"
+        }
+      }
+    },
+    {
+      "op": "set",
+      "var": "m",
+      "value": {
+        "op": "%",
+        "left": {
+          "op": "get",
+          "var": "a"
+        },
+        "right": 3
+      }
+    },
+    {
+      "op": "set",
+      "var": "n",
+      "value": {
+        "values": [
+          {
+            "op": "get",
+            "var": "a"
+          },
+          {
+            "op": "get",
+            "var": "b"
+          }
+        ],
+        "op": "max"
+      }
+    },
+    {
+      "op": "set",
+      "var": "o",
+      "value": {
+        "values": [
+          {
+            "op": "get",
+            "var": "a"
+          },
+          {
+            "op": "get",
+            "var": "b"
+          }
+        ],
+        "op": "min"
+      }
+    },
+    {
+      "op": "set",
+      "var": "p",
+      "value": 1
+    },
+    {
+      "op": "set",
+      "var": "q",
+      "value": 0
+    },
+    {
+      "op": "set",
+      "var": "r",
+      "value": 1
+    },
+    {
+      "op": "set",
+      "var": "s",
+      "value": {
+        "op": "and",
+        "values": [
+          {
+            "op": "get",
+            "var": "p"
+          },
+          {
+            "op": "get",
+            "var": "q"
+          }
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "t",
+      "value": {
+        "op": "or",
+        "values": [
+          {
+            "op": "get",
+            "var": "p"
+          },
+          {
+            "op": "get",
+            "var": "q"
+          }
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "u",
+      "value": {
+        "op": "not",
+        "value": {
+          "op": "get",
+          "var": "p"
+        }
+      }
+    }
+  ]
+}

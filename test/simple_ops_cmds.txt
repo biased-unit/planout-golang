@@ -1,0 +1,40 @@
+a = 10;
+b = 3.14;
+c = "hello";
+d = [1, 2, 3];
+e = [a, b, d];
+f = length(e);
+
+if (f == 3) {
+  g = 1;
+} else {
+  g = 0;
+}
+
+if (f >= 5) {
+  h = 0;
+} else {
+  h = 1;
+}
+
+if (b <= 5) {
+  i = 1;
+} else {
+  i = 0;
+}
+
+j = a + b;
+k = a * b;
+l = a/b;
+m = a % 3;
+
+n = max(a, b);
+o = min(a, b);
+
+p = 1;
+q = 0;
+r = 1;
+
+s = p && q;
+t = p || q;
+u = !p;

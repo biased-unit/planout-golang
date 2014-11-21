@@ -1,0 +1,249 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "numbers",
+      "value": {
+        "op": "array",
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "a",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "b",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "c",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "salt": "a",
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "d",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "weights": {
+          "op": "array",
+          "values": [
+            0.4,
+            0.3,
+            0.2,
+            0.1
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "weightedChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "e",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "weights": {
+          "op": "array",
+          "values": [
+            0.5,
+            0.5,
+            0,
+            0
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "weightedChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "f",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "weights": {
+          "op": "array",
+          "values": [
+            0,
+            0,
+            0.5,
+            0.5
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "weightedChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "g",
+      "value": {
+        "p": 0,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "bernoulliTrial"
+      }
+    },
+    {
+      "op": "set",
+      "var": "h",
+      "value": {
+        "p": 1,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "bernoulliTrial"
+      }
+    },
+    {
+      "op": "set",
+      "var": "i",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "sample"
+      }
+    },
+    {
+      "op": "set",
+      "var": "j",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "draws": 3,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "sample"
+      }
+    },
+    {
+      "op": "set",
+      "var": "k",
+      "value": {
+        "choices": {
+          "op": "get",
+          "var": "numbers"
+        },
+        "p": 0.5,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "bernoulliFilter"
+      }
+    },
+    {
+      "op": "set",
+      "var": "l",
+      "value": {
+        "min": 0,
+        "max": 10,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "randomFloat"
+      }
+    },
+    {
+      "op": "set",
+      "var": "m",
+      "value": {
+        "min": 0,
+        "max": 10,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "randomInteger"
+      }
+    },
+    {
+      "op": "set",
+      "var": "n",
+      "value": 10
+    },
+    {
+      "op": "set",
+      "var": "o",
+      "value": {
+        "op": "negative",
+        "value": {
+          "op": "get",
+          "var": "n"
+        }
+      }
+    }
+  ]
+}

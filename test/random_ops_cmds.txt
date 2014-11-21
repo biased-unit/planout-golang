@@ -1,0 +1,21 @@
+numbers = [1, 2, 3, 4];
+
+a = uniformChoice(choices=numbers, unit=userid);
+b = uniformChoice(choices=numbers, unit=userid);
+c = uniformChoice(choices=numbers, unit=userid, salt="a");
+
+d = weightedChoice(choices=numbers, weights=[0.4, 0.3, 0.2, 0.1], unit=userid);
+e = weightedChoice(choices=numbers, weights=[0.5, 0.5, 0, 0], unit=userid);
+f = weightedChoice(choices=numbers, weights=[0, 0, 0.5, 0.5], unit=userid);
+
+g = bernoulliTrial(p=0.0, unit=userid);
+h = bernoulliTrial(p=1.0, unit=userid);
+
+i = sample(choices=numbers);
+j = sample(choices=numbers, draws=3);
+
+k = bernoulliFilter(choices=numbers, p=0.5, unit=userid);
+
+l = randomFloat(min=0, max=10.0, unit=userid);
+
+m = randomInteger(min=0, max=10, unit=userid);
