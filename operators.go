@@ -129,12 +129,28 @@ type index struct{ params map[string]interface{} }
 
 func (s *index) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"base", "index"}, "Index")
-	choices := evaluate(m["base"], s.params).([]interface{})
-	idx := int(evaluate(m["index"], s.params).(float64))
-	if len(choices) <= idx {
-		panic(fmt.Sprintf("Index operator: Base array shorter %v than index %v\n", len(choices), idx))
+	base := evaluate(m["base"], s.params)
+	index := evaluate(m["index"], s.params)
+
+	base_arr, ok := base.([]interface{})
+	if ok {
+		index_num, ok := toNumber(index)
+		if ok {
+			if compare(len(base_arr), index_num) > 0 {
+				return base_arr[int(index_num)]
+			}
+		}
 	}
-	return choices[idx]
+
+	base_map, ok := base.(map[string]interface{})
+	if ok {
+		index_str, ok := toString(index)
+		if ok {
+			return base_map[index_str]
+		}
+	}
+
+	return nil
 }
 
 type length struct{ params map[string]interface{} }
@@ -149,11 +165,17 @@ type coalesce struct{ params map[string]interface{} }
 
 func (s *coalesce) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"values"}, "Array")
-	values := evaluate(m["values"], s.params).([]interface{})
+	values := m["values"].([]interface{})
+	nvalues := len(values)
 	ret := make([]interface{}, 0, len(values))
-	for i := range values {
-		if values[i] != nil {
-			ret = append(ret, values[i])
+	if nvalues != 1 {
+		return ret
+	}
+
+	value := evaluate(values[0], s.params).([]interface{})
+	for i := range value {
+		if value[i] != nil {
+			ret = append(ret, value[i])
 		}
 	}
 	return ret
@@ -163,12 +185,14 @@ type and struct{ params map[string]interface{} }
 
 func (s *and) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"values"}, "And")
-	values := evaluate(m["values"], s.params).([]interface{})
+
+	values := m["values"].([]interface{})
 	if len(values) == 0 {
 		return false
 	}
 
-	for _, value := range values {
+	for i := range values {
+		value := evaluate(values[i], s.params)
 		if isTrue(value) == false {
 			return false
 		}
@@ -180,16 +204,19 @@ type or struct{ params map[string]interface{} }
 
 func (s *or) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"values"}, "Or")
-	values := evaluate(m["values"], s.params).([]interface{})
+
+	values := m["values"].([]interface{})
 	if len(values) == 0 {
 		return false
 	}
 
-	for _, value := range values {
+	for i := range values {
+		value := evaluate(values[i], s.params)
 		if isTrue(value) {
 			return true
 		}
 	}
+
 	return false
 }
 

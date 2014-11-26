@@ -144,4 +144,14 @@ func TestSimpleOps(t *testing.T) {
 	if u.(bool) == true {
 		t.Errorf("Variable 'u'. Expected false (NOT p).\n")
 	}
+
+	w := params["w"]
+	if reflect.DeepEqual(w, d) == false {
+		t.Errorf("Variable 'w' %v. Expected [1, 2, 3] (same as variable 'd')\n", w)
+	}
+
+	x := params["x"]
+	if compare(x, 2) != 0 {
+		t.Errorf("Variable 'x' %v. Expected 2\n", x)
+	}
 }
