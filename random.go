@@ -130,7 +130,7 @@ func (s *bernoulliFilter) execute(m map[string]interface{}) interface{} {
 	choices := evaluate(m["choices"], s.params).([]interface{})
 	ret := make([]interface{}, 0, len(choices))
 	for i := range choices {
-		append_str := toString(choices[i])
+		append_str, _ := toString(choices[i])
 		rand_val := getUniform(m, s.params, 0.0, 1.0, append_str)
 		if rand_val <= pvalue {
 			ret = append(ret, choices[i])

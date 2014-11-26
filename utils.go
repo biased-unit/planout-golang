@@ -43,51 +43,41 @@ func getOrElse(m map[string]interface{}, key string, def interface{}) interface{
 	return v
 }
 
-func assertKind(lhs, rhs interface{}, opstr string) {
-	lhstype, rhstype := reflect.ValueOf(lhs), reflect.ValueOf(rhs)
-	if lhstype.Kind() != rhstype.Kind() {
-		panic(fmt.Sprintf("%v: Type mismatch between LHS %v (%v) and RHS %v (%v)\n", opstr, lhs, lhstype.Kind(), rhs, rhstype.Kind()))
-	}
-}
-
 func compare(lhs, rhs interface{}) int {
-	switch lhs.(type) {
-	case string:
-		return cmpString(lhs.(string), rhs.(string))
-	default:
-		return cmpFloat(toNumber(lhs), toNumber(rhs))
+	l_str, l_ok := lhs.(string)
+	r_str, r_ok := rhs.(string)
+	if l_ok && r_ok {
+		return cmpString(l_str, r_str)
 	}
+
+	l_num, l_ok := toNumber(lhs)
+	r_num, r_ok := toNumber(rhs)
+	if l_ok && r_ok {
+		return cmpFloat(l_num, r_num)
+	}
+
 	panic(fmt.Sprintf("Compare: Unsupported type\n"))
 }
 
 func isTrue(value interface{}) bool {
 	switch value.(type) {
-	case string:
-		return len(value.(string)) > 0
 	case bool:
 		return value.(bool)
-	default:
-		n := toNumber(value)
+	case string:
+		return len(value.(string)) > 0
+	}
+
+	n, ok := toNumber(value)
+	if ok {
 		return cmpFloat(n, 1.0) == 0
 	}
+
 	panic(fmt.Sprintf("IsTrue: Unsupported type\n"))
 }
 
 func cmpFloat(lhs, rhs float64) int {
 	ret := 0
 	if math.Abs(lhs-rhs) < 0.0001 {
-		ret = 0
-	} else if lhs < rhs {
-		ret = -1
-	} else {
-		ret = 1
-	}
-	return ret
-}
-
-func cmpInt(lhs, rhs int64) int {
-	ret := 0
-	if lhs == rhs {
 		ret = 0
 	} else if lhs < rhs {
 		ret = -1
@@ -110,21 +100,18 @@ func cmpString(lhs, rhs string) int {
 }
 
 func add(x, y interface{}) interface{} {
-
-	assertKind(x, y, "Addition")
-
-	a, b := reflect.ValueOf(x), reflect.ValueOf(y)
-
-	switch a.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return a.Int() + b.Int()
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return a.Uint() + b.Uint()
-	case reflect.Float32, reflect.Float64:
-		return a.Float() + b.Float()
-	case reflect.String:
-		return a.String() + b.String()
+	x_num, x_ok := toNumber(x)
+	y_num, y_ok := toNumber(y)
+	if x_ok && y_ok {
+		return x_num + y_num
 	}
+
+	x_str, x_ok := toString(x)
+	y_str, y_ok := toString(y)
+	if x_ok && y_ok {
+		return x_str + y_str
+	}
+
 	panic("Addition: Unsupported type")
 }
 
@@ -140,18 +127,12 @@ func addSlice(x []interface{}) interface{} {
 
 func multiply(x, y interface{}) interface{} {
 
-	assertKind(x, y, "Multiplication")
-
-	a, b := reflect.ValueOf(x), reflect.ValueOf(y)
-
-	switch a.Kind() {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return a.Int() * b.Int()
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return a.Uint() * b.Uint()
-	case reflect.Float32, reflect.Float64:
-		return a.Float() * b.Float()
+	x_num, x_ok := toNumber(x)
+	y_num, y_ok := toNumber(y)
+	if x_ok && y_ok {
+		return x_num * y_num
 	}
+
 	panic("Multiplication: Unsupported type")
 }
 
@@ -166,27 +147,26 @@ func multiplySlice(x []interface{}) interface{} {
 }
 
 func generateUnitStr(units interface{}) string {
-	unitval := reflect.ValueOf(units)
-	switch unitval.Kind() {
-	case reflect.Array, reflect.Slice:
-		v := units.([]interface{})
-		n := len(v)
+
+	unit_arr, ok := units.([]interface{})
+	if ok {
 		var buffer bytes.Buffer
-		buffer.WriteString(v[0].(string))
-		for i := 0; i < n; i++ {
-			if i != 0 {
-				buffer.WriteString(".")
-				buffer.WriteString(v[i].(string))
-			}
+		n := len(unit_arr)
+		s, _ := toString(unit_arr[0])
+		buffer.WriteString(s)
+		for i := 1; i < n; i++ {
+			buffer.WriteString(".")
+			s, _ = toString(unit_arr[i])
+			buffer.WriteString(s)
 		}
 		return buffer.String()
-	case reflect.String:
-		return unitval.String()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(unitval.Int(), 10)
-	case reflect.Float32, reflect.Float64:
-		return strconv.FormatFloat(unitval.Float(), 'f', -1, 64)
 	}
+
+	unit_str, ok := toString(units)
+	if ok {
+		return unit_str
+	}
+
 	return ""
 }
 
@@ -209,52 +189,54 @@ func generateString() string {
 	return string(s)
 }
 
-func toString(unit interface{}) string {
-	unitval := reflect.ValueOf(unit)
-	switch unitval.Kind() {
-	case reflect.String:
-		return unitval.String()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(unitval.Int(), 10)
-	case reflect.Float32, reflect.Float64:
-		return strconv.FormatFloat(unitval.Float(), 'f', -1, 64)
+func toString(unit interface{}) (string, bool) {
+
+	unit_str, ok := unit.(string)
+	if ok {
+		return unit_str, true
 	}
-	return ""
+
+	unit_num, ok := toNumber(unit)
+	if ok {
+		ret_str := strconv.FormatFloat(unit_num, 'f', -1, 64)
+		return ret_str, true
+	}
+
+	return "", false
 }
 
-func toNumber(value interface{}) float64 {
+func toNumber(value interface{}) (float64, bool) {
 	switch value := value.(type) {
 	case float32, float64:
 		x, ok := value.(float64)
 		if !ok {
 			x = float64(value.(float32))
 		}
-		return x
+		return x, true
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 		i := reflect.ValueOf(value)
-		return float64(i.Int())
-	default:
-		panic(fmt.Sprintf("Rounding operation: Unsupported type %v\n", value))
+		return float64(i.Int()), true
+	case bool:
+		if value {
+			return 1, true
+		} else {
+			return 0, true
+		}
 	}
-	return 0.0
+	return 0.0, false
 }
 
 func roundNumber(value interface{}) interface{} {
-	switch value := value.(type) {
-	case float32, float64:
-		x, ok := value.(float64)
-		if !ok {
-			x = float64(value.(float32))
-		}
+
+	value_num, ok := toNumber(value)
+	if ok {
+		x := value_num
 		x_floor := math.Floor(x)
 		if math.Abs(x-x_floor) < 0.5 {
 			return x_floor
 		}
 		return math.Ceil(x)
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		return value
-	default:
-		panic(fmt.Sprintf("Rounding operation: Unsupported type %v\n", value))
 	}
-	return value
+
+	panic(fmt.Sprintf("Rounding operation: Unsupported type %v\n", value))
 }

@@ -142,11 +142,7 @@ type length struct{ params map[string]interface{} }
 func (s *length) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"values"}, "Length")
 	values := evaluate(m["values"], s.params).([]interface{})
-	l := make([]float64, len(values))
-	for i, value := range values {
-		l[i] = float64(len(value.([]interface{})))
-	}
-	return l[0]
+	return len(values[0].([]interface{}))
 }
 
 type coalesce struct{ params map[string]interface{} }
@@ -225,7 +221,6 @@ type lt struct{ params map[string]interface{} }
 func (s *lt) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "LessThan")
 	lhs, rhs := evaluate(m["left"], s.params), evaluate(m["right"], s.params)
-	assertKind(lhs, rhs, "LessThan")
 	return compare(lhs, rhs) < 0
 }
 
@@ -234,7 +229,6 @@ type lte struct{ params map[string]interface{} }
 func (s *lte) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "LessThanEqual")
 	lhs, rhs := evaluate(m["left"], s.params), evaluate(m["right"], s.params)
-	assertKind(lhs, rhs, "LessThanEqual")
 	return compare(lhs, rhs) <= 0
 }
 
@@ -243,7 +237,6 @@ type gt struct{ params map[string]interface{} }
 func (s *gt) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "GreaterThan")
 	lhs, rhs := evaluate(m["left"], s.params), evaluate(m["right"], s.params)
-	assertKind(lhs, rhs, "GreaterThan")
 	return compare(lhs, rhs) > 0
 }
 
@@ -252,7 +245,6 @@ type gte struct{ params map[string]interface{} }
 func (s *gte) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "GreaterThanEqual")
 	lhs, rhs := evaluate(m["left"], s.params), evaluate(m["right"], s.params)
-	assertKind(lhs, rhs, "GreaterThanEqual")
 	return compare(lhs, rhs) >= 0
 }
 
@@ -261,7 +253,6 @@ type eq struct{ params map[string]interface{} }
 func (s *eq) execute(m map[string]interface{}) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "Equality")
 	lhs, rhs := evaluate(m["left"], s.params), evaluate(m["right"], s.params)
-	assertKind(lhs, rhs, "Equal")
 	return compare(lhs, rhs) == 0
 }
 
