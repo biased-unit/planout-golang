@@ -232,17 +232,16 @@
     {
       "op": "set",
       "var": "n",
-      "value": 10
-    },
-    {
-      "op": "set",
-      "var": "o",
       "value": {
-        "op": "negative",
-        "value": {
+        "choices": {
           "op": "get",
-          "var": "n"
-        }
+          "var": "numbers"
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "sample"
       }
     }
   ]

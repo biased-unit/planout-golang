@@ -330,6 +330,43 @@
           "var": "p"
         }
       }
+    },
+    {
+      "op": "set",
+      "var": "v",
+      "value": {
+        "op": "array",
+        "values": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "op": "set",
+      "var": "w",
+      "value": {
+        "values": [
+          {
+            "op": "get",
+            "var": "v"
+          }
+        ],
+        "op": "coalesce"
+      }
+    },
+    {
+      "op": "set",
+      "var": "x",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "v"
+        },
+        "index": 1
+      }
     }
   ]
 }

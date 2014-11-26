@@ -20,14 +20,50 @@ import (
 	"fmt"
 )
 
-func evaluate(code interface{}, params map[string]interface{}) interface{} {
+type Interpreter struct {
+	Experiment_salt            string
+	Inputs, Outputs, Overrides map[string]interface{}
+	Evaluated                  bool
+}
+
+func (interpreter *Interpreter) get(name string) (interface{}, bool) {
+	value, ok := interpreter.Overrides[name]
+	if ok {
+		return value, true
+	}
+
+	value, ok = interpreter.Inputs[name]
+	if ok {
+		return value, true
+	}
+
+	value, ok = interpreter.Outputs[name]
+	if ok {
+		return value, true
+	}
+	return nil, false
+}
+
+func (interpreter *Interpreter) set(name string, value interface{}) {
+	interpreter.Outputs[name] = value
+}
+
+func (interpreter *Interpreter) getOverrides() map[string]interface{} {
+	return interpreter.Overrides
+}
+
+func (interpreter *Interpreter) hasOverrides(name string) bool {
+	_, exists := interpreter.Overrides[name]
+	return exists
+}
+
+func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
-		opconstruct, exists := isOperator(js)
+		opptr, exists := isOperator(js)
 		if exists {
-			e := opconstruct(params)
-			return e.execute(js)
+			return opptr.execute(js, interpreter)
 		}
 	}
 
@@ -35,7 +71,7 @@ func evaluate(code interface{}, params map[string]interface{}) interface{} {
 	if ok {
 		v := make([]interface{}, len(arr))
 		for i := range arr {
-			v[i] = evaluate(arr[i], params)
+			v[i] = interpreter.evaluate(arr[i])
 		}
 		return v
 	}
@@ -43,17 +79,22 @@ func evaluate(code interface{}, params map[string]interface{}) interface{} {
 	return code
 }
 
-func Experiment(code interface{}, params map[string]interface{}) bool {
+func (interpreter *Interpreter) Run(code interface{}) (map[string]interface{}, bool) {
 
-	defer func() bool {
+	if interpreter.Evaluated {
+		return interpreter.Outputs, true
+	}
+
+	defer func() (map[string]interface{}, bool) {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered ", r)
-			return false
+			return nil, false
 		}
-		return true
+		interpreter.Evaluated = true
+		return interpreter.Outputs, true
 	}()
 
-	evaluate(code, params)
+	interpreter.evaluate(code)
 
-	return true
+	return interpreter.Outputs, true
 }

@@ -240,3 +240,32 @@ func roundNumber(value interface{}) interface{} {
 
 	panic(fmt.Sprintf("Rounding operation: Unsupported type %v\n", value))
 }
+
+func FisherYatesShuffle(inputs []interface{}, nhash ...uint64) {
+	n := len(inputs)
+	var h uint64 = 0
+	rand_provided := (len(nhash) > 0)
+	if rand_provided {
+		h = nhash[0]
+	}
+
+	for i := n - 1; i >= 0; i-- {
+		if !rand_provided {
+			h = uint64(rand.Int())
+		}
+		j := int(h % uint64(i+1))
+		inputs[i], inputs[j] = inputs[j], inputs[i]
+	}
+}
+
+func removeByValue(inputs []interface{}, value interface{}) interface{} {
+	for i := range inputs {
+		if compare(inputs[i], value) == 0 {
+			outputs := make([]interface{}, 0, len(inputs)-1)
+			outputs = append(outputs, inputs[:i]...)
+			outputs = append(outputs, inputs[i+1:]...)
+			return outputs
+		}
+	}
+	return inputs
+}
