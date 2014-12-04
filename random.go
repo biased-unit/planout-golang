@@ -60,12 +60,12 @@ func generateExperimentId(units interface{}, params map[string]interface{}) stri
 	return experimentid
 }
 
-func getHash(m, params map[string]interface{}, appended_units ...string) uint64 {
-	units := evaluate(m["unit"], params)
+func getHash(m, params map[string]interface{}, interpreter *Interpreter, appended_units ...string) uint64 {
+	units := interpreter.evaluate(m["unit"], params)
 
 	_, exists := m["salt"]
 	if exists {
-		parameter_salt := evaluate(m["salt"], params)
+		parameter_salt := interpreter.evaluate(m["salt"], params)
 		params["salt"] = parameter_salt.(string)
 	}
 
@@ -80,12 +80,12 @@ func getHash(m, params map[string]interface{}, appended_units ...string) uint64 
 	return hash(experimentid)
 }
 
-func getUniform(m, params map[string]interface{}, min, max float64, appended_units ...string) float64 {
+func getUniform(m, params map[string]interface{}, interpreter *Interpreter, min, max float64, appended_units ...string) float64 {
 	scale, _ := strconv.ParseUint("FFFFFFFFFFFFFFF", 16, 64)
 	append_string := ""
 	var h uint64 = 0
 	if len(appended_units) == 0 {
-		h = getHash(m, params)
+		h = getHash(m, params, interpreter)
 	} else {
 		append_string = append_string + appended_units[0]
 		for i := range appended_units {
@@ -93,7 +93,7 @@ func getUniform(m, params map[string]interface{}, min, max float64, appended_uni
 				append_string = append_string + "." + appended_units[i]
 			}
 		}
-		h = getHash(m, params, append_string)
+		h = getHash(m, params, interpreter, append_string)
 	}
 	shift := float64(h) / float64(scale)
 	return min + shift*(max-min)
@@ -101,21 +101,21 @@ func getUniform(m, params map[string]interface{}, min, max float64, appended_uni
 
 type uniformChoice struct{ params map[string]interface{} }
 
-func (s *uniformChoice) execute(m map[string]interface{}) interface{} {
+func (s *uniformChoice) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"choices", "unit"}, "UniformChoice")
-	choices := evaluate(m["choices"], s.params).([]interface{})
+	choices := interpreter.evaluate(m["choices"], s.params).([]interface{})
 	nchoices := uint64(len(choices))
-	idx := getHash(m, s.params) % nchoices
+	idx := getHash(m, s.params, interpreter) % nchoices
 	choice := choices[idx]
 	return choice
 }
 
 type bernoulliTrial struct{ params map[string]interface{} }
 
-func (s *bernoulliTrial) execute(m map[string]interface{}) interface{} {
+func (s *bernoulliTrial) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit"}, "BernoulliTrial")
-	pvalue := evaluate(m["p"], s.params).(float64)
-	rand_val := getUniform(m, s.params, 0.0, 1.0)
+	pvalue := interpreter.evaluate(m["p"], s.params).(float64)
+	rand_val := getUniform(m, s.params, interpreter, 0.0, 1.0)
 	if rand_val <= pvalue {
 		return 1
 	}
@@ -124,14 +124,14 @@ func (s *bernoulliTrial) execute(m map[string]interface{}) interface{} {
 
 type bernoulliFilter struct{ params map[string]interface{} }
 
-func (s *bernoulliFilter) execute(m map[string]interface{}) interface{} {
+func (s *bernoulliFilter) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"choices", "unit"}, "BernoulliFilter")
-	pvalue := evaluate(m["p"], s.params).(float64)
-	choices := evaluate(m["choices"], s.params).([]interface{})
+	pvalue := interpreter.evaluate(m["p"], s.params).(float64)
+	choices := interpreter.evaluate(m["choices"], s.params).([]interface{})
 	ret := make([]interface{}, 0, len(choices))
 	for i := range choices {
 		append_str, _ := toString(choices[i])
-		rand_val := getUniform(m, s.params, 0.0, 1.0, append_str)
+		rand_val := getUniform(m, s.params, interpreter, 0.0, 1.0, append_str)
 		if rand_val <= pvalue {
 			ret = append(ret, choices[i])
 		}
@@ -141,12 +141,12 @@ func (s *bernoulliFilter) execute(m map[string]interface{}) interface{} {
 
 type weightedChoice struct{ params map[string]interface{} }
 
-func (s *weightedChoice) execute(m map[string]interface{}) interface{} {
+func (s *weightedChoice) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"choices", "unit", "weights"}, "WeightedChoice")
-	weights := evaluate(m["weights"], s.params).([]interface{})
+	weights := interpreter.evaluate(m["weights"], s.params).([]interface{})
 	sum, cweights := getCummulativeWeights(weights)
-	stop_val := getUniform(m, s.params, 0.0, sum)
-	choices := evaluate(m["choices"], s.params).([]interface{})
+	stop_val := getUniform(m, s.params, interpreter, 0.0, sum)
+	choices := interpreter.evaluate(m["choices"], s.params).([]interface{})
 	for i := range cweights {
 		if stop_val <= cweights[i] {
 			return choices[i]
@@ -157,30 +157,30 @@ func (s *weightedChoice) execute(m map[string]interface{}) interface{} {
 
 type randomFloat struct{ params map[string]interface{} }
 
-func (s *randomFloat) execute(m map[string]interface{}) interface{} {
+func (s *randomFloat) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit"}, "RandomFloat")
 	min_val := getOrElse(m, "min", 0.0)
 	max_val := getOrElse(m, "max", 1.0)
-	return getUniform(m, s.params, min_val.(float64), max_val.(float64))
+	return getUniform(m, s.params, interpreter, min_val.(float64), max_val.(float64))
 }
 
 type randomInteger struct{ params map[string]interface{} }
 
-func (s *randomInteger) execute(m map[string]interface{}) interface{} {
+func (s *randomInteger) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit"}, "RandomFloat")
 	min_val := uint64(getOrElse(m, "min", 0.0).(float64))
 	max_val := uint64(getOrElse(m, "max", 1.0).(float64))
-	return min_val + getHash(m, s.params)%(max_val-min_val+1)
+	return min_val + getHash(m, s.params, interpreter)%(max_val-min_val+1)
 }
 
 type sample struct{ params map[string]interface{} }
 
-func (s *sample) execute(m map[string]interface{}) interface{} {
+func (s *sample) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit", "choices"}, "Sample")
-	choices := evaluate(m["choices"], s.params).([]interface{})
+	choices := interpreter.evaluate(m["choices"], s.params).([]interface{})
 	nchoices := len(choices)
 	for i := nchoices - 1; i >= 0; i-- {
-		j := int(getHash(m, s.params) % uint64(i+1))
+		j := int(getHash(m, s.params, interpreter) % uint64(i+1))
 		choices[i], choices[j] = choices[j], choices[i]
 	}
 	draws := int(getOrElse(m, "draws", float64(len(choices))).(float64))

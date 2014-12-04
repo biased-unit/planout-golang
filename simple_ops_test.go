@@ -34,7 +34,7 @@ func TestSimpleOps(t *testing.T) {
 	js := readTest("test/simple_ops.json")
 	params := make(map[string]interface{})
 
-	expt := new(Experiment)
+	expt := new(Interpreter)
 
 	ok := expt.Run(js, params)
 	if !ok {

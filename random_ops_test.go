@@ -37,7 +37,7 @@ func TestRandomOps(t *testing.T) {
 		params["userid"] = userid
 		userids = append(userids, userid)
 
-		expt := new(Experiment)
+		expt := new(Interpreter)
 		ok := expt.Run(js, params)
 		if !ok {
 			t.Errorf("Error running experiment 'test/random_ops.json'\n")

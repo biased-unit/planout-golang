@@ -47,18 +47,18 @@ func (ctx *PlanoutContext) isInExperiment() bool {
 	return ctx.in_experiment
 }
 
-type Experiment struct {
+type Interpreter struct {
 	ctx *PlanoutContext
 }
 
-func evaluate(code interface{}, params map[string]interface{}) interface{} {
+func (interpreter *Interpreter) evaluate(code interface{}, params map[string]interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
 		opconstruct, exists := isOperator(js)
 		if exists {
 			e := opconstruct(params)
-			return e.execute(js)
+			return e.execute(js, interpreter)
 		}
 	}
 
@@ -66,7 +66,7 @@ func evaluate(code interface{}, params map[string]interface{}) interface{} {
 	if ok {
 		v := make([]interface{}, len(arr))
 		for i := range arr {
-			v[i] = evaluate(arr[i], params)
+			v[i] = interpreter.evaluate(arr[i], params)
 		}
 		return v
 	}
@@ -74,7 +74,7 @@ func evaluate(code interface{}, params map[string]interface{}) interface{} {
 	return code
 }
 
-func (e *Experiment) Run(code interface{}, params map[string]interface{}) bool {
+func (interpreter *Interpreter) Run(code interface{}, params map[string]interface{}) bool {
 
 	defer func() bool {
 		if r := recover(); r != nil {
@@ -84,7 +84,7 @@ func (e *Experiment) Run(code interface{}, params map[string]interface{}) bool {
 		return true
 	}()
 
-	evaluate(code, params)
+	interpreter.evaluate(code, params)
 
 	return true
 }
