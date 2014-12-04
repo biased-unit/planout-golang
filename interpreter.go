@@ -20,6 +20,37 @@ import (
 	"fmt"
 )
 
+type PlanoutContext struct {
+	env             map[string]interface{}
+	override        map[string]interface{}
+	experiment_salt string
+	in_experiment   bool
+}
+
+func (ctx *PlanoutContext) getEnv(s string) interface{} {
+	return ctx.env[s]
+}
+
+func (ctx *PlanoutContext) setEnv(k string, v interface{}) {
+	ctx.env[k] = v
+}
+
+func (ctx *PlanoutContext) getOverride(s string) interface{} {
+	return ctx.override[s]
+}
+
+func (ctx *PlanoutContext) getExperimentSalt() string {
+	return ctx.experiment_salt
+}
+
+func (ctx *PlanoutContext) isInExperiment() bool {
+	return ctx.in_experiment
+}
+
+type Experiment struct {
+	ctx *PlanoutContext
+}
+
 func evaluate(code interface{}, params map[string]interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
@@ -43,7 +74,7 @@ func evaluate(code interface{}, params map[string]interface{}) interface{} {
 	return code
 }
 
-func Experiment(code interface{}, params map[string]interface{}) bool {
+func (e *Experiment) Run(code interface{}, params map[string]interface{}) bool {
 
 	defer func() bool {
 		if r := recover(); r != nil {

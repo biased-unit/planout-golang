@@ -236,7 +236,8 @@ func (s *cond) execute(m map[string]interface{}) interface{} {
 	for i := range conditions {
 		c := conditions[i].(map[string]interface{})
 		existOrPanic(c, []string{"if", "then"}, "Condition")
-		if evaluate(c["if"], s.params).(bool) == true {
+		if_value := evaluate(c["if"], s.params)
+		if isTrue(if_value) {
 			return evaluate(c["then"], s.params)
 		}
 	}
