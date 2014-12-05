@@ -36,7 +36,7 @@ func TestSimpleOps(t *testing.T) {
 
 	expt := new(Interpreter)
 
-	ok := expt.Run(js, params)
+	_, ok := expt.Run(js, params)
 	if !ok {
 		t.Errorf("Error running experiment 'test/simple_ops.json'\n")
 		return

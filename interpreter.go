@@ -20,35 +20,41 @@ import (
 	"fmt"
 )
 
-type PlanoutContext struct {
-	env             map[string]interface{}
-	override        map[string]interface{}
-	experiment_salt string
-	in_experiment   bool
-}
-
-func (ctx *PlanoutContext) getEnv(s string) interface{} {
-	return ctx.env[s]
-}
-
-func (ctx *PlanoutContext) setEnv(k string, v interface{}) {
-	ctx.env[k] = v
-}
-
-func (ctx *PlanoutContext) getOverride(s string) interface{} {
-	return ctx.override[s]
-}
-
-func (ctx *PlanoutContext) getExperimentSalt() string {
-	return ctx.experiment_salt
-}
-
-func (ctx *PlanoutContext) isInExperiment() bool {
-	return ctx.in_experiment
-}
-
 type Interpreter struct {
-	ctx *PlanoutContext
+	experiment_salt            string
+	inputs, outputs, overrides map[string]interface{}
+	evaluated                  bool
+}
+
+func (interpreter *Interpreter) get(name string) interface{} {
+	value, ok := interpreter.overrides[name]
+	if ok {
+		return value
+	}
+
+	value, ok = interpreter.inputs[name]
+	if ok {
+		return value
+	}
+
+	value, ok = interpreter.outputs[name]
+	if ok {
+		return value
+	}
+	return nil
+}
+
+func (interpreter *Interpreter) set(name string, value interface{}) {
+	interpreter.outputs[name] = value
+}
+
+func (interpreter *Interpreter) getOverrides() map[string]interface{} {
+	return interpreter.overrides
+}
+
+func (interpreter *Interpreter) hasOverrides(name string) bool {
+	_, exists := interpreter.overrides[name]
+	return exists
 }
 
 func (interpreter *Interpreter) evaluate(code interface{}, params map[string]interface{}) interface{} {
@@ -74,17 +80,22 @@ func (interpreter *Interpreter) evaluate(code interface{}, params map[string]int
 	return code
 }
 
-func (interpreter *Interpreter) Run(code interface{}, params map[string]interface{}) bool {
+func (interpreter *Interpreter) Run(code interface{}, params map[string]interface{}) (map[string]interface{}, bool) {
 
-	defer func() bool {
+	if interpreter.evaluated {
+		return interpreter.outputs, true
+	}
+
+	defer func() (map[string]interface{}, bool) {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered ", r)
-			return false
+			return nil, false
 		}
-		return true
+		interpreter.evaluated = true
+		return interpreter.outputs, true
 	}()
 
 	interpreter.evaluate(code, params)
 
-	return true
+	return interpreter.outputs, true
 }
