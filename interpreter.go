@@ -21,50 +21,49 @@ import (
 )
 
 type Interpreter struct {
-	experiment_salt            string
-	inputs, outputs, overrides map[string]interface{}
-	evaluated                  bool
+	Experiment_salt            string
+	Inputs, Outputs, Overrides map[string]interface{}
+	Evaluated                  bool
 }
 
-func (interpreter *Interpreter) get(name string) interface{} {
-	value, ok := interpreter.overrides[name]
+func (interpreter *Interpreter) get(name string) (interface{}, bool) {
+	value, ok := interpreter.Overrides[name]
 	if ok {
-		return value
+		return value, true
 	}
 
-	value, ok = interpreter.inputs[name]
+	value, ok = interpreter.Inputs[name]
 	if ok {
-		return value
+		return value, true
 	}
 
-	value, ok = interpreter.outputs[name]
+	value, ok = interpreter.Outputs[name]
 	if ok {
-		return value
+		return value, true
 	}
-	return nil
+	return nil, false
 }
 
 func (interpreter *Interpreter) set(name string, value interface{}) {
-	interpreter.outputs[name] = value
+	interpreter.Outputs[name] = value
 }
 
 func (interpreter *Interpreter) getOverrides() map[string]interface{} {
-	return interpreter.overrides
+	return interpreter.Overrides
 }
 
 func (interpreter *Interpreter) hasOverrides(name string) bool {
-	_, exists := interpreter.overrides[name]
+	_, exists := interpreter.Overrides[name]
 	return exists
 }
 
-func (interpreter *Interpreter) evaluate(code interface{}, params map[string]interface{}) interface{} {
+func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 
 	js, ok := code.(map[string]interface{})
 	if ok {
-		opconstruct, exists := isOperator(js)
+		opptr, exists := isOperator(js)
 		if exists {
-			e := opconstruct(params)
-			return e.execute(js, interpreter)
+			return opptr.execute(js, interpreter)
 		}
 	}
 
@@ -72,7 +71,7 @@ func (interpreter *Interpreter) evaluate(code interface{}, params map[string]int
 	if ok {
 		v := make([]interface{}, len(arr))
 		for i := range arr {
-			v[i] = interpreter.evaluate(arr[i], params)
+			v[i] = interpreter.evaluate(arr[i])
 		}
 		return v
 	}
@@ -80,10 +79,10 @@ func (interpreter *Interpreter) evaluate(code interface{}, params map[string]int
 	return code
 }
 
-func (interpreter *Interpreter) Run(code interface{}, params map[string]interface{}) (map[string]interface{}, bool) {
+func (interpreter *Interpreter) Run(code interface{}) (map[string]interface{}, bool) {
 
-	if interpreter.evaluated {
-		return interpreter.outputs, true
+	if interpreter.Evaluated {
+		return interpreter.Outputs, true
 	}
 
 	defer func() (map[string]interface{}, bool) {
@@ -91,11 +90,11 @@ func (interpreter *Interpreter) Run(code interface{}, params map[string]interfac
 			fmt.Println("Recovered ", r)
 			return nil, false
 		}
-		interpreter.evaluated = true
-		return interpreter.outputs, true
+		interpreter.Evaluated = true
+		return interpreter.Outputs, true
 	}()
 
-	interpreter.evaluate(code, params)
+	interpreter.evaluate(code)
 
-	return interpreter.outputs, true
+	return interpreter.Outputs, true
 }

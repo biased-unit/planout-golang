@@ -37,21 +37,27 @@ func TestRandomOps(t *testing.T) {
 		params["userid"] = userid
 		userids = append(userids, userid)
 
-		expt := new(Interpreter)
-		_, ok := expt.Run(js, params)
+		expt := &Interpreter{
+			Experiment_salt: "global_salt",
+			Evaluated:       false,
+			Inputs:          params,
+			Outputs:         map[string]interface{}{},
+			Overrides:       map[string]interface{}{},
+		}
+		output, ok := expt.Run(js)
 		if !ok {
 			t.Errorf("Error running experiment 'test/random_ops.json'\n")
 			return
 		}
 
-		numbers := params["numbers"].([]interface{})
+		numbers := output["numbers"].([]interface{})
 
-		a = append(a, params["a"].(float64))
-		b = append(b, params["b"].(float64))
-		c = append(c, params["c"].(float64))
+		a = append(a, output["a"].(float64))
+		b = append(b, output["b"].(float64))
+		c = append(c, output["c"].(float64))
 
-		e := params["e"].(float64)
-		f := params["f"].(float64)
+		e := output["e"].(float64)
+		f := output["f"].(float64)
 		if e == 3 || e == 4 {
 			t.Errorf("WeightedChoice(%v) Variable 'e' must only be 1 or 2\n", userid)
 		}
@@ -59,8 +65,8 @@ func TestRandomOps(t *testing.T) {
 			t.Errorf("WeightedChoice(%v) Variable 'f' must only be 3 or 4\n", userid)
 		}
 
-		g := params["g"]
-		h := params["h"]
+		g := output["g"]
+		h := output["h"]
 		if compare(g, 0) != 0 {
 			t.Errorf("BernoulliTrial(%v) Variable 'g' (%v) must be 0\n", userid, g)
 		}
@@ -68,8 +74,8 @@ func TestRandomOps(t *testing.T) {
 			t.Errorf("BernoulliTrial(%v) Variable 'h' (%v) must be 1\n", userid, h)
 		}
 
-		i := params["i"].([]interface{})
-		j := params["j"].([]interface{})
+		i := output["i"].([]interface{})
+		j := output["j"].([]interface{})
 		if len(i) != len(numbers) {
 			t.Errorf("Sample(%v) Expected length of 'i' (%v) to be the same as the input\n", userid, i)
 		}
