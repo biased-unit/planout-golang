@@ -38,3 +38,6 @@ r = 1;
 s = p && q;
 t = p || q;
 u = !p;
+
+z1 = struct["member"];
+z2 = struct["string"];

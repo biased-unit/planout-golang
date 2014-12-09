@@ -30,9 +30,17 @@ func readTest(f string) map[string]interface{} {
 	return js
 }
 
+type Struct struct {
+	Member int
+	String string
+}
+
 func TestSimpleOps(t *testing.T) {
 	js := readTest("test/simple_ops.json")
+
+	data := Struct{Member: 101, String: "test-string"}
 	params := make(map[string]interface{})
+	params["struct"] = data
 
 	expt := &Interpreter{
 		Experiment_salt: "global_salt",
@@ -161,5 +169,15 @@ func TestSimpleOps(t *testing.T) {
 	x := output["x"]
 	if compare(x, 2) != 0 {
 		t.Errorf("Variable 'x' %v. Expected 2\n", x)
+	}
+
+	z := output["z1"]
+	if z != 101 {
+		t.Errorf("Variable 'z1' %v. Expected 101\n", z)
+	}
+
+	z2 := output["z2"]
+	if z2 != "test-string" {
+		t.Errorf("Variable 'z' '%v'. Expected 'test-string'\n", z2)
 	}
 }

@@ -367,6 +367,30 @@
         },
         "index": 1
       }
+    },
+    {
+      "op": "set",
+      "var": "z1",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "struct"
+        },
+        "index": "member"
+      }
+    },
+    {
+      "op": "set",
+      "var": "z2",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "struct"
+        },
+        "index": "string"
+      }
     }
   ]
 }
