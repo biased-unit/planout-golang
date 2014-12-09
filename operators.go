@@ -19,6 +19,8 @@ package goplanout
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
+	"strings"
 	"time"
 )
 
@@ -140,11 +142,58 @@ func (s *index) execute(m map[string]interface{}, interpreter *Interpreter) inte
 		}
 	}
 
-	base_map, ok := base.(map[string]interface{})
-	if ok {
-		index_str, ok := toString(index)
-		if ok {
+	if index_str, isStr := toString(index); isStr {
+		if base_map, isMap := base.(map[string]interface{}); isMap {
 			return base_map[index_str]
+		}
+
+		base_type := reflect.ValueOf(base)
+		for {
+			if base_type.Kind() != reflect.Ptr {
+				break
+			}
+			base_type = base_type.Elem()
+		}
+
+		if base_type.Kind() != reflect.Invalid && base_type.Kind() == reflect.Struct {
+			if field, hasField := base_type.Type().FieldByName(strings.Title(index_str)); hasField {
+				// Only use exported fields
+				if field.PkgPath == "" {
+					value := base_type.FieldByIndex(field.Index)
+					switch value.Kind() {
+					case reflect.Int:
+						return int(value.Int())
+					case reflect.Int8:
+						return int8(value.Int())
+					case reflect.Int16:
+						return int16(value.Int())
+					case reflect.Int32:
+						return int32(value.Int())
+					case reflect.Int64:
+						return value.Int()
+					case reflect.Uint:
+						return uint(value.Uint())
+					case reflect.Uint8:
+						return uint8(value.Uint())
+					case reflect.Uint16:
+						return uint16(value.Uint())
+					case reflect.Uint32:
+						return uint32(value.Uint())
+					case reflect.Uint64:
+						return uint64(value.Uint())
+					case reflect.Float32:
+						return float32(value.Float())
+					case reflect.Float64:
+						return value.Float()
+					case reflect.String:
+						return value.String()
+					case reflect.Bool:
+						return value.Bool()
+					default:
+						return value.Convert(field.Type)
+					}
+				}
+			}
 		}
 	}
 
