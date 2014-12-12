@@ -1,6 +1,3 @@
-planout-go-interpreter
-======================
-
 (Multi Variate Testing) Interpreter for PlanOut code written in Golang
 
 Here's an example program that consumes compiled PlanOut code and executes 
