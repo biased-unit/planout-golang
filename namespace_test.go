@@ -17,6 +17,7 @@
 package goplanout
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -30,16 +31,22 @@ func TestSimpleNamespace(t *testing.T) {
 		avail = append(avail, i)
 	}
 
+	inputs := make(map[string]interface{})
+	inputs["userid"] = generateString()
+
 	n := &SimpleNamespace{
-		name:                "simple_namespace",
-		num_segments:        100,
-		primary_unit:        "userid",
-		segment_allocations: segments,
-		available_segments:  avail,
-		current_experiments: map[string]bool{},
+		Name:               "simple_namespace",
+		NumSegments:        100,
+		PrimaryUnit:        "userid",
+		SegmentAllocations: segments,
+		AvailableSegments:  avail,
+		CurrentExperiments: map[string]PlanOutCode{},
+		Inputs:             inputs,
 	}
 
 	n.addExperiment("simple ops", js1, 50)
 	n.addExperiment("random ops", js2, 50)
-	n.removeExperiment("simple ops")
+	// n.removeExperiment("simple ops")
+
+	fmt.Printf("Random segment alloc: %v\n", n.getSegment())
 }

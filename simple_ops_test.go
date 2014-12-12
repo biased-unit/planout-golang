@@ -35,11 +35,11 @@ func TestSimpleOps(t *testing.T) {
 	params := make(map[string]interface{})
 
 	expt := &Interpreter{
-		Experiment_salt: "global_salt",
-		Evaluated:       false,
-		Inputs:          params,
-		Outputs:         map[string]interface{}{},
-		Overrides:       map[string]interface{}{},
+		ExperimentSalt: "global_salt",
+		Evaluated:      false,
+		Inputs:         params,
+		Outputs:        map[string]interface{}{},
+		Overrides:      map[string]interface{}{},
 	}
 
 	output, ok := expt.Run(js)

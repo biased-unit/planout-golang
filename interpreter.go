@@ -20,8 +20,10 @@ import (
 	"fmt"
 )
 
+type PlanOutCode interface{}
+
 type Interpreter struct {
-	Experiment_salt            string
+	ExperimentSalt             string
 	Inputs, Outputs, Overrides map[string]interface{}
 	Evaluated                  bool
 }

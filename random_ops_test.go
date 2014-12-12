@@ -38,11 +38,11 @@ func TestRandomOps(t *testing.T) {
 		userids = append(userids, userid)
 
 		expt := &Interpreter{
-			Experiment_salt: "global_salt",
-			Evaluated:       false,
-			Inputs:          params,
-			Outputs:         map[string]interface{}{},
-			Overrides:       map[string]interface{}{},
+			ExperimentSalt: "global_salt",
+			Evaluated:      false,
+			Inputs:         params,
+			Outputs:        map[string]interface{}{},
+			Overrides:      map[string]interface{}{},
 		}
 		output, ok := expt.Run(js)
 		if !ok {

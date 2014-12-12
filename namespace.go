@@ -1,70 +1,97 @@
 package goplanout
 
-import ()
+import (
+	"fmt"
+)
 
 type SimpleNamespace struct {
-	name                string
-	primary_unit        string
-	num_segments        int
-	segment_allocations []string
-	available_segments  []interface{}
-	current_experiments map[string]bool
+	Name               string
+	PrimaryUnit        string
+	NumSegments        int
+	SegmentAllocations []string
+	AvailableSegments  []interface{}
+	CurrentExperiments map[string]PlanOutCode
+	Inputs             map[string]interface{}
 }
 
-func (n *SimpleNamespace) addExperiment(name string, code map[string]interface{}, segments int) {
-	avail := len(n.available_segments)
+func (n *SimpleNamespace) addExperiment(name string, code map[string]interface{}, segments int) error {
+	avail := len(n.AvailableSegments)
 	if avail < segments {
-		// error
+		return fmt.Errorf("Not enough segments available %v to add the new experiment %v\n", avail, name)
 	}
 
-	// sample available_segments based on primary_unit
-	params := make(map[string]interface{})
-	params["unit"] = name
-
+	// Sample(choices=available_segments, draws=segments, unit=name)
 	expt := &Interpreter{
-		Experiment_salt: n.name,
-		Evaluated:       false,
-		Inputs:          params,
-		Outputs:         map[string]interface{}{},
-		Overrides:       map[string]interface{}{},
+		ExperimentSalt: n.Name,
+		Evaluated:      false,
+		Inputs:         n.Inputs,
+		Outputs:        map[string]interface{}{},
+		Overrides:      map[string]interface{}{},
 	}
 
+	// Compile Sample operator
 	m := make(map[string]interface{})
-	m["choices"] = n.available_segments
+	m["choices"] = n.AvailableSegments
 	m["unit"] = name
-	m["salt"] = n.name
+	m["salt"] = n.Name
 	m["draws"] = segments
 	s := &sample{}
 	shuffle := s.execute(m, expt).([]interface{})
 
-	// allocate sampled_segments to experiment
-	// remove segment from available_segments
+	// Allocate sampled_segments to experiment
+	// Remove segment from available_segments
 	for i := range shuffle {
 		j := shuffle[i].(int)
-		n.segment_allocations[j] = name
-		n.available_segments = removeByValue(n.available_segments, j).([]interface{})
+		n.SegmentAllocations[j] = name
+		n.AvailableSegments = removeByValue(n.AvailableSegments, j).([]interface{})
 	}
 
-	// update current_experiments
-	n.current_experiments[name] = true
+	// Update current_experiments
+	n.CurrentExperiments[name] = code
+
+	return nil
 }
 
-func (n *SimpleNamespace) removeExperiment(name string) {
-	segments_to_free := make([]int, 0, n.num_segments)
-	for i := range n.segment_allocations {
-		if n.segment_allocations[i] == name {
-			segments_to_free = append(segments_to_free, i)
+func (n *SimpleNamespace) removeExperiment(name string) error {
+	_, exists := n.CurrentExperiments[name]
+	if !exists {
+		return fmt.Errorf("Experiment %v does not exists in the namespace\n", name)
+	}
+
+	segmentsToFree := make([]int, 0, n.NumSegments)
+	for i := range n.SegmentAllocations {
+		if n.SegmentAllocations[i] == name {
+			segmentsToFree = append(segmentsToFree, i)
 		}
 	}
 
-	for i := range segments_to_free {
-		n.available_segments = append(n.available_segments, segments_to_free[i])
+	for i := range segmentsToFree {
+		n.AvailableSegments = append(n.AvailableSegments, segmentsToFree[i])
 	}
 
-	delete(n.current_experiments, name)
+	delete(n.CurrentExperiments, name)
+
+	return nil
 }
 
-func (n *SimpleNamespace) getSegment() int {
+func (n *SimpleNamespace) getSegment() uint64 {
 	// generate random integer min=0, max=num_segments, unit=primary_unit
-	return 0
+	// RandomInteger(min=0, max=self.num_segments, unit=itemgetter(*self.primary_unit)(self.inputs))
+	expt := &Interpreter{
+		ExperimentSalt: n.Name,
+		Evaluated:      false,
+		Inputs:         n.Inputs,
+		Outputs:        map[string]interface{}{},
+		Overrides:      map[string]interface{}{},
+	}
+
+	// Compile RandomInteger operator
+	m := make(map[string]interface{})
+	m["salt"] = n.Name
+	m["min"] = 0
+	m["max"] = n.NumSegments
+	m["unit"] = n.Inputs[n.PrimaryUnit]
+	s := &randomInteger{}
+	randInt := s.execute(m, expt).(uint64)
+	return randInt
 }

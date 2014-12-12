@@ -159,18 +159,19 @@ type randomFloat struct{}
 
 func (s *randomFloat) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit"}, "RandomFloat")
-	min_val := getOrElse(m, "min", 0.0)
-	max_val := getOrElse(m, "max", 1.0)
-	return getUniform(m, interpreter, min_val.(float64), max_val.(float64))
+	min_val, _ := toNumber(getOrElse(m, "min", 0.0))
+	max_val, _ := toNumber(getOrElse(m, "max", 1.0))
+	return getUniform(m, interpreter, min_val, max_val)
 }
 
 type randomInteger struct{}
 
 func (s *randomInteger) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"unit"}, "RandomFloat")
-	min_val := uint64(getOrElse(m, "min", 0.0).(float64))
-	max_val := uint64(getOrElse(m, "max", 1.0).(float64))
-	return min_val + getHash(m, interpreter)%(max_val-min_val+1)
+	min_val, _ := toNumber(getOrElse(m, "min", 0.0))
+	max_val, _ := toNumber(getOrElse(m, "max", 0.0))
+	mod_val := uint64(max_val) - uint64(min_val) + 1
+	return uint64(min_val) + getHash(m, interpreter)%mod_val
 }
 
 type sample struct{}
