@@ -1,7 +1,10 @@
+[![Build Status](https://travis-ci.org/URXtech/planout-golang.svg?branch=master)](https://travis-ci.org/URXtech/planout-golang)
+
 (Multi Variate Testing) Interpreter for PlanOut code written in Golang
 
 Here's an example program that consumes compiled PlanOut code and executes 
 the associated experiment using the golang interpreter.
+
 
 ```go
 package main
