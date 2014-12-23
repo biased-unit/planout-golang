@@ -42,12 +42,21 @@ func main() {
 	params["experiment_salt"] = "expt"
 	params["userid"] = generateString()
 
-	// Calling goplanout.Experiment runs the PlanOut code
-	// given the input params. It returns true if no errors
-	// were encountered during the run. False, otherwise.
-	// During the run, any variables that are evaluated
-	// are added to the dictionary along with its value.
-	ok := goplanout.Experiment(js, params)
+	// Construct an instance of the Interpreter object.
+	// Initialize ExperimentSalt and set Inputs to params.
+	expt := &goplanout.Interpreter{
+		ExperimentSalt: "global_salt",
+		Evaluated:      false,
+		Inputs:         params,
+		Outputs:        map[string]interface{}{},
+		Overrides:      map[string]interface{}{},
+	}
+	
+	// Call the Run(...) method on the Interpreter instance.
+	// The output of the run will contain the dictionary 
+	// of variables and associated values that were evaluated
+	// as part of the experiment.
+	output, ok := expt.Run(js)
 	if !ok {
 		fmt.Println("Failed to run the experiment")
 	} else {
