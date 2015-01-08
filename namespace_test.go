@@ -33,8 +33,9 @@ func TestSimpleNamespace(t *testing.T) {
 	n.AddExperiment("random ops", js2, 10)
 	n.AddExperiment("simple", js3, 80)
 
-	if n.getSegment() != 79 {
-		t.Errorf("Incorrect allocation for test-id")
+	seg := n.getSegment()
+	if seg != 53 {
+		t.Errorf("Incorrect allocation (%v) for test-id. Expected 53.", seg)
 	}
 
 	if out, ok := n.Run(); !ok || out["output"] != "test" {

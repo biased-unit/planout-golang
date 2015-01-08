@@ -103,13 +103,13 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	}
 
 	// Compile Sample operator
-	m := make(map[string]interface{})
-	m["choices"] = n.availableSegments
-	m["unit"] = name
-	m["salt"] = n.Name
-	m["draws"] = segments
+	args := make(map[string]interface{})
+	args["choices"] = n.availableSegments
+	args["unit"] = name
+	args["salt"] = n.Name
+	args["draws"] = segments
 	s := &sample{}
-	shuffle := s.execute(m, expt).([]interface{})
+	shuffle := s.execute(args, expt).([]interface{})
 
 	// Allocate sampled_segments to experiment
 	// Remove segment from available_segments
@@ -132,11 +132,11 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	}
 
 	// Compile RandomInteger operator
-	m := make(map[string]interface{})
-	m["salt"] = n.Name
-	m["min"] = 0
-	m["max"] = n.NumSegments
-	m["unit"] = n.Inputs[n.PrimaryUnit]
+	args := make(map[string]interface{})
+	args["salt"] = n.Name
+	args["min"] = 0
+	args["max"] = n.NumSegments
+	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
-	return s.execute(m, expt).(uint64)
+	return s.execute(args, expt).(uint64)
 }
