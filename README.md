@@ -46,9 +46,9 @@ func main() {
 	params["userid"] = generateString()
 
 	// Construct an instance of the Interpreter object.
-	// Initialize ExperimentSalt and set Inputs to params.
+	// Initialize Salt and set Inputs to params.
 	expt := &goplanout.Interpreter{
-		ExperimentSalt: "global_salt",
+		Salt: "global_salt",
 		Evaluated:      false,
 		Inputs:         params,
 		Outputs:        map[string]interface{}{},

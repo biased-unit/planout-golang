@@ -20,12 +20,34 @@ import (
 	"fmt"
 )
 
-type PlanOutCode interface{}
+type PlanOutCode interface {
+	Run() (map[string]interface{}, bool)
+}
 
 type Interpreter struct {
-	ExperimentSalt             string
+	Name                       string
+	Salt                       string
 	Inputs, Outputs, Overrides map[string]interface{}
+	Code                       interface{}
 	Evaluated                  bool
+}
+
+func (interpreter *Interpreter) Run() (map[string]interface{}, bool) {
+	if interpreter.Evaluated {
+		return interpreter.Outputs, true
+	}
+
+	defer func() (map[string]interface{}, bool) {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered ", r)
+			return nil, false
+		}
+		interpreter.Evaluated = true
+		return interpreter.Outputs, true
+	}()
+
+	interpreter.evaluate(interpreter.Code)
+	return interpreter.Outputs, true
 }
 
 func (interpreter *Interpreter) get(name string) (interface{}, bool) {
@@ -79,24 +101,4 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 	}
 
 	return code
-}
-
-func (interpreter *Interpreter) Run(code interface{}) (map[string]interface{}, bool) {
-
-	if interpreter.Evaluated {
-		return interpreter.Outputs, true
-	}
-
-	defer func() (map[string]interface{}, bool) {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered ", r)
-			return nil, false
-		}
-		interpreter.Evaluated = true
-		return interpreter.Outputs, true
-	}()
-
-	interpreter.evaluate(code)
-
-	return interpreter.Outputs, true
 }

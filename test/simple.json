@@ -1,0 +1,10 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "output",
+      "value": "test"
+    }
+  ]
+}

@@ -17,36 +17,28 @@
 package goplanout
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestSimpleNamespace(t *testing.T) {
 	js1 := readTest("test/simple_ops.json")
 	js2 := readTest("test/random_ops.json")
-
-	segments := make([]string, 100)
-	avail := make([]interface{}, 0, 100)
-	for i := 0; i < 100; i++ {
-		avail = append(avail, i)
-	}
+	js3 := readTest("test/simple.json")
 
 	inputs := make(map[string]interface{})
-	inputs["userid"] = generateString()
+	inputs["userid"] = "test-id"
 
-	n := &SimpleNamespace{
-		Name:               "simple_namespace",
-		NumSegments:        100,
-		PrimaryUnit:        "userid",
-		SegmentAllocations: segments,
-		AvailableSegments:  avail,
-		CurrentExperiments: map[string]PlanOutCode{},
-		Inputs:             inputs,
+	n := NewSimpleNamespace("simple_namespace", 100, "userid", inputs)
+	n.AddExperiment("simple ops", js1, 10)
+	n.AddExperiment("random ops", js2, 10)
+	n.AddExperiment("simple", js3, 80)
+
+	if n.getSegment() != 79 {
+		t.Errorf("Incorrect allocation for test-id")
 	}
 
-	n.addExperiment("simple ops", js1, 50)
-	n.addExperiment("random ops", js2, 50)
-	// n.removeExperiment("simple ops")
+	if out, ok := n.Run(); !ok || out["output"] != "test" {
+		t.Errorf("Namespace run was not successful out:[%s]", out)
+	}
 
-	fmt.Printf("Random segment alloc: %v\n", n.getSegment())
 }
