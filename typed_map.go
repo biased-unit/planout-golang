@@ -1,4 +1,4 @@
-package goplanout
+package planout
 
 import (
 	"reflect"

@@ -59,7 +59,7 @@ func main() {
 
 	// Construct an instance of the Interpreter object.
 	// Initialize Salt and set Inputs to params.
-	expt := &goplanout.Interpreter{
+	expt := &planout.Interpreter{
 		Salt: "global_salt",
 		Evaluated:      false,
 		Inputs:         params,
