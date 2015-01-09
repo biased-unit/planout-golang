@@ -78,6 +78,8 @@ func main() {
 	} else {
 		fmt.Printf("Params: %v\n", params)
 	}
+	
+	fmt.Println(output)
 }
 ```
 
