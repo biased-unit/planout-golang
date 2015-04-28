@@ -115,6 +115,11 @@ func (s *get) execute(m map[string]interface{}, interpreter *Interpreter) interf
 	if !exists {
 		panic(fmt.Sprintf("No input for key %v\n", m["var"]))
 	}
+
+	// arr_val, ok := value.([]interface{})
+	// if ok {
+	// 	fmt.Printf("Getting arr val: %v\n", arr_val)
+	// }
 	return value
 }
 
@@ -122,7 +127,8 @@ type array struct{}
 
 func (s *array) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Array")
-	return interpreter.evaluate(m["values"])
+	ret := interpreter.evaluate(m["values"])
+	return ret
 }
 
 type index struct{}
@@ -204,27 +210,27 @@ type length struct{}
 
 func (s *length) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Length")
-	values := interpreter.evaluate(m["values"]).([]interface{})
-	return len(values[0].([]interface{}))
+	// fmt.Printf("Calculating length of the array (before): %v\n", m["values"])
+	values := interpreter.evaluate(m["values"])
+	// fmt.Printf("Calculating length of the array: %v\n", values)
+	return len(values.([]interface{}))
 }
 
 type coalesce struct{}
 
 func (s *coalesce) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
-	existOrPanic(m, []string{"values"}, "Array")
-	values := m["values"].([]interface{})
-	nvalues := len(values)
-	ret := make([]interface{}, 0, len(values))
-	if nvalues != 1 {
-		return ret
-	}
+	existOrPanic(m, []string{"values"}, "Coalesce")
 
-	value := interpreter.evaluate(values[0]).([]interface{})
-	for i := range value {
-		if value[i] != nil {
-			ret = append(ret, value[i])
+	raw_input_values := interpreter.evaluate(m["values"]).([]interface{})
+	nvalues := len(raw_input_values)
+	ret := make([]interface{}, 0, nvalues)
+
+	for i := range raw_input_values {
+		if raw_input_values[i] != nil {
+			ret = append(ret, raw_input_values[i])
 		}
 	}
+
 	return ret
 }
 

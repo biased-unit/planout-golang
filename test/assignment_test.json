@@ -1,0 +1,59 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "foo",
+      "value": {
+        "choices": {
+          "op": "array",
+          "values": [
+            "a",
+            "b"
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "tester_unit"
+        },
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "bar",
+      "value": {
+        "choices": {
+          "op": "array",
+          "values": [
+            "a",
+            "b"
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "tester_unit"
+        },
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "set",
+      "var": "baz",
+      "value": {
+        "choices": {
+          "op": "array",
+          "values": [
+            "a",
+            "b"
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "tester_unit"
+        },
+        "op": "uniformChoice"
+      }
+    }
+  ]
+}

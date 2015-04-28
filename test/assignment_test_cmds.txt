@@ -1,0 +1,3 @@
+foo = uniformChoice(choices=['a', 'b'], unit=tester_unit);
+bar = uniformChoice(choices=['a', 'b'], unit=tester_unit);
+baz = uniformChoice(choices=['a', 'b'], unit=tester_unit);
