@@ -56,7 +56,7 @@ func compare(lhs, rhs interface{}) int {
 		return cmpFloat(l_num, r_num)
 	}
 
-	panic(fmt.Sprintf("Compare: Unsupported type\n"))
+	panic(fmt.Sprintf("Compare: Unsupported type. LHS %v, RHS %v\n", lhs, rhs))
 }
 
 func isTrue(value interface{}) bool {
@@ -69,7 +69,7 @@ func isTrue(value interface{}) bool {
 
 	n, ok := toNumber(value)
 	if ok {
-		return cmpFloat(n, 1.0) == 0
+		return cmpFloat(n, 0.0) != 0
 	}
 
 	panic(fmt.Sprintf("IsTrue: Unsupported type\n"))

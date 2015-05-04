@@ -29,7 +29,8 @@ type Interpreter struct {
 	Salt                       string
 	Inputs, Outputs, Overrides map[string]interface{}
 	Code                       interface{}
-	Evaluated                  bool
+	Evaluated, InExperiment    bool
+	parameterSalt              string
 }
 
 func (interpreter *Interpreter) Run() (map[string]interface{}, bool) {
@@ -93,6 +94,15 @@ func (interpreter *Interpreter) evaluate(code interface{}) interface{} {
 
 	arr, ok := code.([]interface{})
 	if ok {
+		if len(arr) == 1 {
+			_, ok := arr[0].(map[string]interface{})
+			if ok {
+				_, ok := isOperator(arr[0])
+				if ok {
+					return interpreter.evaluate(arr[0])
+				}
+			}
+		}
 		v := make([]interface{}, len(arr))
 		for i := range arr {
 			v[i] = interpreter.evaluate(arr[i])

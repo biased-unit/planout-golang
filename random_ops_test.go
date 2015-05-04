@@ -17,8 +17,12 @@
 package planout
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
+	"text/template"
 )
 
 func TestRandomOps(t *testing.T) {
@@ -92,5 +96,185 @@ func TestRandomOps(t *testing.T) {
 
 	if reflect.DeepEqual(a, c) != true {
 		t.Errorf("UniformChoice(%v): Expected 'a' (%v) and 'c' (%v) to be equal (same parameter salt)", userids, a, c)
+	}
+}
+
+func runExperimentWithSalt(rawCode []byte, salt string, inputs map[string]interface{}) (*Interpreter, bool) {
+
+	code := make(map[string]interface{})
+	json.Unmarshal(rawCode, &code)
+
+	expt := &Interpreter{
+		Salt:      salt,
+		Evaluated: false,
+		Inputs:    inputs,
+		Outputs:   map[string]interface{}{},
+		Overrides: map[string]interface{}{},
+		Code:      code,
+	}
+
+	_, ok := expt.Run()
+
+	return expt, ok
+}
+
+func TestSalts(t *testing.T) {
+	unit := generateString()
+	salt := "assign_salt_a"
+
+	expt, _ := runExperimentWithSalt([]byte(`{"op":"seq",
+		"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	x, _ := expt.get("x")
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+		"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	y, _ := expt.get("y")
+
+	if reflect.DeepEqual(x, y) {
+		t.Errorf("Variable 'x' and 'y'. Expected inequality. Actual x=%v, y=%v\n", x, y)
+	}
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+	"seq":[{"op":"set","var":"z","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","salt":"x"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	z, _ := expt.get("z")
+
+	if reflect.DeepEqual(x, z) == false {
+		t.Errorf("Variable z used 'x' as parameter salt. Expected equality. Actual x=%v, z=%v\n", x, z)
+	}
+
+	salt = "assign_salt_b"
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+	"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	x, _ = expt.get("x")
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+	"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	y, _ = expt.get("y")
+
+	if reflect.DeepEqual(x, y) == false {
+		t.Errorf("Variable 'x' and 'y'. Expected equality. Actual x=%v, y=%v\n", x, y)
+	}
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+	"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs2"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	x, _ = expt.get("x")
+
+	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
+	"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs2"}}]}`),
+		salt, map[string]interface{}{"userid": unit})
+	y, _ = expt.get("y")
+
+	if reflect.DeepEqual(x, y) == false {
+		t.Errorf("Variable 'x' and 'y'. Expected equality. Actual x=%v, y=%v\n", x, y)
+	}
+}
+
+func runExperimentWithInputs(rawCode []byte, inputs map[string]interface{}) (*Interpreter, bool) {
+
+	code := make(map[string]interface{})
+	json.Unmarshal(rawCode, &code)
+
+	expt := &Interpreter{
+		Salt:      "experiment_salt",
+		Evaluated: false,
+		Inputs:    inputs,
+		Outputs:   map[string]interface{}{},
+		Overrides: map[string]interface{}{},
+		Code:      code,
+	}
+
+	_, ok := expt.Run()
+
+	return expt, ok
+}
+
+type Histogram struct {
+	hist map[string]int
+}
+
+func (h Histogram) add(element interface{}) {
+	var key string = fmt.Sprintf("%v", element)
+	count, exists := h.hist[key]
+	if exists {
+		delete(h.hist, key)
+		h.hist[key] = count + 1
+	} else {
+		h.hist[key] = 1
+	}
+}
+
+func randomExperiment(t *testing.T, textTemplate string, data interface{}, runs int) {
+
+	parsedTemplate, err := template.New("test").Parse(textTemplate)
+	if err != nil {
+		t.Errorf("Error parsing experiment template: %v\n", parsedTemplate)
+	}
+
+	var code bytes.Buffer
+	err = parsedTemplate.Execute(&code, data)
+	if err != nil {
+		t.Errorf("Error executing experiment template: %v\n", parsedTemplate)
+	}
+
+	x := make([]interface{}, runs)
+	h := Histogram{hist: map[string]int{}}
+	for i := 0; i < runs; i++ {
+		expt, _ := runExperimentWithInputs(code.Bytes(), map[string]interface{}{"i": i})
+		x[i], _ = expt.get("x")
+		h.add(x[i])
+	}
+	fmt.Printf("Histogram: %v\n", h)
+	code.Reset()
+}
+
+func TestBernoulliTrial(t *testing.T) {
+	fmt.Println("Testing Bernoulli Trial ...")
+
+	var textTemplate string = `{"op":"seq",
+	"seq":[{"op":"set","var":"x","value":{"p":{{.}},"unit":{"op":"get","var":"i"},"op":"bernoulliTrial"}}]}`
+
+	probabilities := []float64{0.5, 0.1, 0.9, 0.75}
+	for i := range probabilities {
+		randomExperiment(t, textTemplate, probabilities[i], 1000)
+	}
+}
+
+func TestUniformChoice(t *testing.T) {
+	fmt.Println("Testing Uniform Choice ...")
+
+	var textTemplate string = `{"op":"seq",
+	"seq":[{"op":"set","var":"x",
+	"value":{"choices":{"op":"array","values":{{.}}},
+	"unit":{"op":"get","var":"i"},"op":"uniformChoice"}}]}`
+
+	choices := []interface{}{`["a"]`, `["a", "b"]`, `[1, 2, 3, 4]`}
+	for i := range choices {
+		randomExperiment(t, textTemplate, choices[i], 1000)
+	}
+}
+
+type WeightedChoice struct {
+	Choices, Weights string
+}
+
+func TestWeightedChoice(t *testing.T) {
+	fmt.Println("Testing Uniform Choice ...")
+
+	var textTemplate string = `{"op":"seq",
+	"seq":[{"op":"set","var":"x",
+	"value":{"choices":{"op":"array","values":{{.Choices}}},
+	"weights":{"op":"array","values":{{.Weights}}},
+	"unit":{"op":"get","var":"i"},"op":"weightedChoice"}}]}`
+
+	choices := []interface{}{WeightedChoice{Choices: `["a", "b", "c"]`, Weights: `[0.8, 0.1, 0.1]`}}
+	for i := range choices {
+		randomExperiment(t, textTemplate, choices[i], 1000)
 	}
 }

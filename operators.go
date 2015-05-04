@@ -101,7 +101,7 @@ type set struct{}
 func (s *set) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"var", "value"}, "Set")
 	lhs := m["var"].(string)
-	interpreter.Inputs["salt"] = lhs
+	interpreter.parameterSalt = lhs
 	value := interpreter.evaluate(m["value"])
 	interpreter.Outputs[lhs] = value
 	return true
@@ -116,10 +116,6 @@ func (s *get) execute(m map[string]interface{}, interpreter *Interpreter) interf
 		panic(fmt.Sprintf("No input for key %v\n", m["var"]))
 	}
 
-	// arr_val, ok := value.([]interface{})
-	// if ok {
-	// 	fmt.Printf("Getting arr val: %v\n", arr_val)
-	// }
 	return value
 }
 
@@ -210,9 +206,7 @@ type length struct{}
 
 func (s *length) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"values"}, "Length")
-	// fmt.Printf("Calculating length of the array (before): %v\n", m["values"])
 	values := interpreter.evaluate(m["values"])
-	// fmt.Printf("Calculating length of the array: %v\n", values)
 	return len(values.([]interface{}))
 }
 
@@ -447,6 +441,6 @@ type stopPlanout struct{}
 func (s *stopPlanout) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"value"}, "Literal")
 	value := interpreter.evaluate(m["value"])
-	m["in_experiment"] = value
+	interpreter.InExperiment = isTrue(value)
 	panic(nil)
 }

@@ -177,29 +177,248 @@ func TestCoreOps(t *testing.T) {
 	// Test Length
 	expt, _ = runConfig([]byte(`{"op": "length", "values": {"op": "array", "values": [1,2,3,4,5]}}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 5) != 0 {
+		t.Errorf("Variable x. Expected 5. Actual %v\n", x)
+	}
 
 	expt, _ = runConfig([]byte(`{"op": "length", "values": [1,2,3,4,5]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 5) != 0 {
+		t.Errorf("Variable x. Expected 5. Actual %v\n", x)
+	}
 
-	expt, _ = runExperiment([]byte(`{"op":"seq","seq":[{"op":"set","var":"arr","value":{"op":"array","values":[111,222,333]}},{"op":"set","var":"x","value":{"values":[{"op":"get","var":"arr"}],"op":"length"}}]}`))
+	// arr = [111, 222, 333];
+	// x = length(arr);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"arr","value":{"op":"array","values":[111,222,333]}},
+						{"op":"set","var":"x","value":{"values":[{"op":"get","var":"arr"}],"op":"length"}}]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 3) != 0 {
+		t.Errorf("Variable x. Expected 3. Actual %v\n", x)
+	}
 
-	expt, _ = runExperiment([]byte(`{"op":"seq","seq":[{"op":"set","var":"a","value":111},{"op":"set","var":"b","value":222},{"op":"set","var":"c","value":{"op":"array","values":[{"op":"get","var":"a"},{"op":"get","var":"b"}]}},{"op":"set","var":"x","value":{"values":[{"op":"get","var":"c"}],"op":"length"}}]}`))
+	// a = 111;
+	// b = 222;
+	// c = [a, b];
+	// x = length(c);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"a","value":111},
+						{"op":"set","var":"b","value":222},
+						{"op":"set","var":"c","value":{"op":"array","values":[{"op":"get","var":"a"},{"op":"get","var":"b"}]}},
+						{"op":"set","var":"x","value":{"values":[{"op":"get","var":"c"}],"op":"length"}}]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 2) != 0 {
+		t.Errorf("Variable x. Expected 2. Actual %v\n", x)
+	}
 
-	expt, _ = runExperiment([]byte(`{"op":"seq","seq":[{"op":"set","var":"a","value":111},{"op":"set","var":"b","value":222},{"op":"set","var":"x","value":{"values":[{"op":"array","values":[{"op":"get","var":"a"},{"op":"get","var":"b"}]}],"op":"length"}}]}`))
+	// a = 111;
+	// b = 222;
+	// x = length([a, b]);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"a","value":111},
+						{"op":"set","var":"b","value":222},
+						{"op":"set","var":"x", "value":{"op":"length","values":[{"op":"array","values":[{"op":"get","var":"a"},{"op":"get","var":"b"}]}]}}]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 2) != 0 {
+		t.Errorf("Variable x. Expected 2. Actual %v\n", x)
+	}
 
-	expt, _ = runExperiment([]byte(`{"op":"seq","seq":[{"op":"set","var":"a","value":1111},{"op":"set","var":"x","value":{"values":[{"op":"array","values":[{"op":"get","var":"a"},3333]}],"op":"length"}}]}`))
+	// a = 1111;
+	// x = length([a, 3333]);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"a","value":1111},
+						{"op":"set","var":"x","value":{"values":[{"op":"array","values":[{"op":"get","var":"a"},3333]}],"op":"length"}}]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
 
-	expt, _ = runExperiment([]byte(`{"op":"seq","seq":[{"op":"set","var":"x","value":{"values":[{"op":"array","values":[111,222]}],"op":"length"}}]}`))
+	// x = length([111, 222]);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":{"values":[{"op":"array","values":[111,222]}],"op":"length"}}]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v\n", x)
+	if compare(x, 2) != 0 {
+		t.Errorf("Variable x. Expected 2. Actual %v\n", x)
+	}
+
+	// x = length([]);
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":{"values":[{"op":"array","values":[]}],"op":"length"}}]}`))
+	x, _ = expt.get("x")
+	if compare(x, 0) != 0 {
+		t.Errorf("Variable x. Expected 2. Actual %v\n", x)
+	}
+
+	// Test NOT operator
+	expt, _ = runConfig([]byte(`{"op": "not", "value": 0}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "not", "value": false}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "not", "value": 1}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "not", "value": true}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	// Test OR operator
+	expt, _ = runConfig([]byte(`{"op": "or", "values": [0, 0, 0, 0]}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "or", "values": [0, 0, 0, 1]}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "or", "values": [false, true, false]}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	// Test AND operator
+	expt, _ = runConfig([]byte(`{"op": "and", "values": [1, 1, 0]}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "and", "values": [0, 0, 1]}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "and", "values": [true, true, true]}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	// Test Commutative operators
+	expt, _ = runConfig([]byte(`{"op": "min", "values": [33, 7, 18, 21, -3]}`))
+	x, _ = expt.get("x")
+	if compare(x, -3) != 0 {
+		t.Errorf("Variable x. Expected -3. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "max", "values": [33, 7, 18, 21, -3]}`))
+	x, _ = expt.get("x")
+	if compare(x, 33) != 0 {
+		t.Errorf("Variable x. Expected 33. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "sum", "values": [33, 7, 18, 21, -3]}`))
+	x, _ = expt.get("x")
+	if compare(x, 76) != 0 {
+		t.Errorf("Variable x. Expected 76. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "product", "values": [33, 7, 18, 21, -3]}`))
+	x, _ = expt.get("x")
+	if compare(x, -261954) != 0 {
+		t.Errorf("Variable x. Expected -261954. Actual %v\n", x)
+	}
+
+	// Test Binary operators
+	expt, _ = runConfig([]byte(`{"op": "equals", "left": 1, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "equals", "left": 2, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": ">", "left": 1, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "<", "left": 1, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": ">=", "left": 2, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": ">=", "left": 1, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, false) != 0 {
+		t.Errorf("Variable x. Expected False. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "<=", "left": 1, "right": 2}`))
+	x, _ = expt.get("x")
+	if compare(x, true) != 0 {
+		t.Errorf("Variable x. Expected True. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "%", "left": 11, "right": 3}`))
+	x, _ = expt.get("x")
+	if compare(x, 2) != 0 {
+		t.Errorf("Variable x. Expected 2. Actual %v\n", x)
+	}
+
+	expt, _ = runConfig([]byte(`{"op": "/", "left": 3, "right": 4}`))
+	x, _ = expt.get("x")
+	if compare(x, 0.75) != 0 {
+		t.Errorf("Variable x. Expected 0.75 . Actual %v\n", x)
+	}
+
+	// Test RETURN operator
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":2}, 
+					{"op":"return","value":true}, 
+					{"op":"set","var":"y","value":4}]}`))
+	if !isTrue(expt.InExperiment) {
+		t.Errorf("Variable x. Expected True . Actual %v\n", expt.InExperiment)
+	}
+
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":2}, 
+					{"op":"return","value":42}, 
+					{"op":"set","var":"y","value":4}]}`))
+	if !isTrue(expt.InExperiment) {
+		t.Errorf("Variable x. Expected True . Actual %v\n", expt.InExperiment)
+	}
+
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":2}, 
+					{"op":"return","value":false}, 
+					{"op":"set","var":"y","value":4}]}`))
+	if isTrue(expt.InExperiment) {
+		t.Errorf("Variable x. Expected False . Actual %v\n", expt.InExperiment)
+	}
+
+	expt, _ = runExperiment([]byte(`{"op":"seq",
+					"seq":[{"op":"set","var":"x","value":2}, 
+					{"op":"return","value":0}, 
+					{"op":"set","var":"y","value":4}]}`))
+	if isTrue(expt.InExperiment) {
+		t.Errorf("Variable x. Expected False . Actual %v\n", expt.InExperiment)
+	}
 }
