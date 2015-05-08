@@ -19,7 +19,6 @@ package planout
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"testing"
 )
 
@@ -156,23 +155,41 @@ func TestCoreOps(t *testing.T) {
 	// Test Coalesce
 	expt, _ = runConfig([]byte(`{"op": "coalesce", "values": {"op": "array", "values": [100, 200, 300]}}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v of type %v\n", x, reflect.TypeOf(x))
+	lhs := fmt.Sprintf("%v", x)
+	rhs := fmt.Sprintf("%v", []interface{}{100, 200, 300})
+	if compare(lhs, rhs) != 0 {
+		t.Errorf("Variable x. Expected [100, 200, 300]. Actual %v\n", x)
+	}
 
 	expt, _ = runConfig([]byte(`{"op": "coalesce", "values": [100, 200, 300, null]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v of type %v\n", x, reflect.TypeOf(x))
+	lhs = fmt.Sprintf("%v", x)
+	rhs = fmt.Sprintf("%v", []interface{}{100, 200, 300})
+	if compare(lhs, rhs) != 0 {
+		t.Errorf("Variable x. Expected [100, 200, 300]. Actual %v\n", x)
+	}
 
 	expt, _ = runConfig([]byte(`{"op": "coalesce", "values": [null]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v of type %v\n", x, reflect.TypeOf(x))
+	if len(x.([]interface{})) != 0 {
+		t.Errorf("Variable x. Expected []. Actual %v\n", x)
+	}
 
 	expt, _ = runConfig([]byte(`{"op": "coalesce", "values": [null, 42, null]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v of type %v\n", x, reflect.TypeOf(x))
+	lhs = fmt.Sprintf("%v", x)
+	rhs = fmt.Sprintf("%v", []interface{}{42})
+	if compare(lhs, rhs) != 0 {
+		t.Errorf("Variable x. Expected [42]. Actual %v\n", x)
+	}
 
 	expt, _ = runConfig([]byte(`{"op": "coalesce", "values": [null, null, 43]}`))
 	x, _ = expt.get("x")
-	fmt.Printf("X: %v of type %v\n", x, reflect.TypeOf(x))
+	lhs = fmt.Sprintf("%v", x)
+	rhs = fmt.Sprintf("%v", []interface{}{43})
+	if compare(lhs, rhs) != 0 {
+		t.Errorf("Variable x. Expected [43]. Actual %v\n", x)
+	}
 
 	// Test Length
 	expt, _ = runConfig([]byte(`{"op": "length", "values": {"op": "array", "values": [1,2,3,4,5]}}`))

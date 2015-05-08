@@ -135,7 +135,7 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	args := make(map[string]interface{})
 	args["salt"] = n.Name
 	args["min"] = 0
-	args["max"] = n.NumSegments
+	args["max"] = n.NumSegments - 1
 	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
 	return s.execute(args, expt).(uint64)

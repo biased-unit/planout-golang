@@ -38,11 +38,10 @@ func hash(in string) uint64 {
 	return z
 }
 
-func generateNameToHash(units interface{}, salt string, interpreter *Interpreter) string {
-	unitstr := generateUnitStr(units)
+func generateNameToHash(unit, salt string) string {
 	experimentid := salt
-	if unitstr != "" {
-		experimentid = experimentid + "." + unitstr
+	if unit != "" {
+		experimentid = experimentid + "." + unit
 	}
 	return experimentid
 }
@@ -61,12 +60,21 @@ func getSalt(args map[string]interface{}, experimentSalt, parameterSalt string) 
 	return experimentSalt + "." + parameterSalt
 }
 
+func getUnit(args map[string]interface{}, interpreter *Interpreter) string {
+	var unitstr string
+	rawUnit, exists := args["unit"]
+	if exists {
+		units := interpreter.evaluate(rawUnit)
+		unitstr = generateUnitStr(units)
+	}
+	return unitstr
+}
+
 func getHash(args map[string]interface{}, interpreter *Interpreter, appended_units ...string) uint64 {
-	units := interpreter.evaluate(args["unit"])
 
+	unitstr := getUnit(args, interpreter)
 	salt := getSalt(args, interpreter.Salt, interpreter.parameterSalt)
-
-	name := generateNameToHash(units, salt, interpreter)
+	name := generateNameToHash(unitstr, salt)
 
 	if len(appended_units) > 0 {
 		for i := range appended_units {
@@ -174,10 +182,19 @@ func (s *randomInteger) execute(args map[string]interface{}, interpreter *Interp
 type sample struct{}
 
 func (s *sample) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
-	existOrPanic(args, []string{"unit", "choices"}, "Sample")
+	existOrPanic(args, []string{"choices"}, "Sample")
 	choices := interpreter.evaluate(args["choices"]).([]interface{})
 	nhash := getHash(args, interpreter)
 	FisherYatesShuffle(choices, nhash)
-	draws, _ := toNumber(getOrElse(args, "draws", len(choices)))
-	return choices[:int(draws)]
+
+	draws := len(choices)
+	arg_draws, exists := args["draws"]
+	if exists {
+		eval_draws, ok := toNumber(interpreter.evaluate(arg_draws))
+		if ok {
+			draws = int(eval_draws)
+		}
+	}
+
+	return choices[:draws]
 }

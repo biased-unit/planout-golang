@@ -34,7 +34,7 @@ func TestSimpleNamespace(t *testing.T) {
 	n.AddExperiment("simple", js3, 80)
 
 	seg := n.getSegment()
-	if seg != 53 {
+	if seg != 92 {
 		t.Errorf("Incorrect allocation (%v) for test-id. Expected 53.", seg)
 	}
 
