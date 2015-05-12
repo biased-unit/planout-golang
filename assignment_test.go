@@ -93,12 +93,12 @@ func TestSimpleOverride(t *testing.T) {
 			return
 		}
 
-		x, _ := expt.get("x")
+		x, _ := expt.Get("x")
 		if compare(x, 42) != 0 {
 			t.Errorf("Variable 'x'. Expected override 42. Actual %v\n", x)
 		}
 
-		y, _ := expt.get("y")
+		y, _ := expt.Get("y")
 		if compare(y, 43) != 0 {
 			t.Errorf("Variable 'y'. Expected override 43. Actual %v\n", y)
 		}

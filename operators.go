@@ -111,7 +111,7 @@ type get struct{}
 
 func (s *get) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"var"}, "Get")
-	value, exists := interpreter.get(m["var"].(string))
+	value, exists := interpreter.Get(m["var"].(string))
 	if !exists {
 		panic(fmt.Sprintf("No input for key %v\n", m["var"]))
 	}

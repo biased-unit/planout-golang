@@ -46,12 +46,12 @@ func TestInterpreter(t *testing.T) {
 			return
 		}
 
-		x, _ := expt.get("specific_goal")
+		x, _ := expt.Get("specific_goal")
 		if compare(x, 1) != 0 {
 			t.Errorf("Variable 'x'. Expected override 1. Actual %v\n", x)
 		}
 
-		y, _ := expt.get("ratings_goal")
+		y, _ := expt.Get("ratings_goal")
 		if compare(y, 320) != 0 {
 			t.Errorf("Variable 'y'. Expected override 320. Actual %v\n", y)
 		}
@@ -89,12 +89,12 @@ func TestInterpreterWithOverride(t *testing.T) {
 			return
 		}
 
-		x, _ := expt.get("specific_goal")
+		x, _ := expt.Get("specific_goal")
 		if compare(x, 0) != 0 {
 			t.Errorf("Variable 'x'. Expected override 1. Actual %v\n", x)
 		}
 
-		y, _ := expt.get("ratings_goal")
+		y, _ := expt.Get("ratings_goal")
 		if y != nil {
 			t.Errorf("Variable 'y'. Expected nil. Actual %v\n", y)
 		}
@@ -131,7 +131,7 @@ func TestInterpreterWithOverride(t *testing.T) {
 			return
 		}
 
-		x, _ := expt.get("specific_goal")
+		x, _ := expt.Get("specific_goal")
 		if compare(x, 1) != 0 {
 			t.Errorf("Variable 'x'. Expected override 1. Actual %v\n", x)
 		}

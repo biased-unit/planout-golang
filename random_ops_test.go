@@ -126,12 +126,12 @@ func TestSalts(t *testing.T) {
 	expt, _ := runExperimentWithSalt([]byte(`{"op":"seq",
 		"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	x, _ := expt.get("x")
+	x, _ := expt.Get("x")
 
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 		"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	y, _ := expt.get("y")
+	y, _ := expt.Get("y")
 
 	if reflect.DeepEqual(x, y) {
 		t.Errorf("Variable 'x' and 'y'. Expected inequality. Actual x=%v, y=%v\n", x, y)
@@ -140,7 +140,7 @@ func TestSalts(t *testing.T) {
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 	"seq":[{"op":"set","var":"z","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","salt":"x"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	z, _ := expt.get("z")
+	z, _ := expt.Get("z")
 
 	if reflect.DeepEqual(x, z) == false {
 		t.Errorf("Variable z used 'x' as parameter salt. Expected equality. Actual x=%v, z=%v\n", x, z)
@@ -151,12 +151,12 @@ func TestSalts(t *testing.T) {
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 	"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	x, _ = expt.get("x")
+	x, _ = expt.Get("x")
 
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 	"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	y, _ = expt.get("y")
+	y, _ = expt.Get("y")
 
 	if reflect.DeepEqual(x, y) == false {
 		t.Errorf("Variable 'x' and 'y'. Expected equality. Actual x=%v, y=%v\n", x, y)
@@ -165,12 +165,12 @@ func TestSalts(t *testing.T) {
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 	"seq":[{"op":"set","var":"x","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs2"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	x, _ = expt.get("x")
+	x, _ = expt.Get("x")
 
 	expt, _ = runExperimentWithSalt([]byte(`{"op":"seq",
 	"seq":[{"op":"set","var":"y","value":{"min":0,"max":100000,"unit":{"op":"get","var":"userid"},"op":"randomInteger","full_salt":"fs2"}}]}`),
 		salt, map[string]interface{}{"userid": unit})
-	y, _ = expt.get("y")
+	y, _ = expt.Get("y")
 
 	if reflect.DeepEqual(x, y) == false {
 		t.Errorf("Variable 'x' and 'y'. Expected equality. Actual x=%v, y=%v\n", x, y)
@@ -256,7 +256,7 @@ func randomExperiment(t *testing.T, textTemplate string, data interface{}, runs 
 	h := Histogram{hist: map[string]int{}}
 	for i := 0; i < runs; i++ {
 		expt, _ := runExperimentWithInputs(code.Bytes(), map[string]interface{}{"i": i})
-		x[i], _ = expt.get("x")
+		x[i], _ = expt.Get("x")
 		h.add(x[i])
 	}
 	code.Reset()

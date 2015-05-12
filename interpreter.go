@@ -51,7 +51,7 @@ func (interpreter *Interpreter) Run() (map[string]interface{}, bool) {
 	return interpreter.Outputs, true
 }
 
-func (interpreter *Interpreter) get(name string) (interface{}, bool) {
+func (interpreter *Interpreter) Get(name string) (interface{}, bool) {
 	value, ok := interpreter.Overrides[name]
 	if ok {
 		return value, true
