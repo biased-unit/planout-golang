@@ -257,15 +257,3 @@ func FisherYatesShuffle(inputs []interface{}, nhash ...uint64) {
 		inputs[i], inputs[j] = inputs[j], inputs[i]
 	}
 }
-
-func removeByValue(inputs []interface{}, value interface{}) interface{} {
-	for i := range inputs {
-		if compare(inputs[i], value) == 0 {
-			outputs := make([]interface{}, 0, len(inputs)-1)
-			outputs = append(outputs, inputs[:i]...)
-			outputs = append(outputs, inputs[i+1:]...)
-			return outputs
-		}
-	}
-	return inputs
-}

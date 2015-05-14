@@ -2,6 +2,7 @@ package planout
 
 import (
 	"fmt"
+	"sort"
 )
 
 type Namespace interface {
@@ -15,12 +16,13 @@ type SimpleNamespace struct {
 	NumSegments        int
 	Inputs             map[string]interface{}
 	segmentAllocations map[uint64]string
-	availableSegments  []interface{}
+	availableSegments  []int
 	currentExperiments map[string]interface{}
+	defaultExperiment  map[string]interface{}
 }
 
 func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs map[string]interface{}) SimpleNamespace {
-	avail := make([]interface{}, 0, numSegments)
+	avail := make([]int, 0, numSegments)
 	for i := 0; i < numSegments; i++ {
 		avail = append(avail, i)
 	}
@@ -36,23 +38,30 @@ func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs
 	}
 }
 
-func (n *SimpleNamespace) Run() (map[string]interface{}, bool) {
-	out := make(map[string]interface{})
+func (n *SimpleNamespace) Run() *Interpreter {
 	// Is the unit allocated to an experiment ?
-	if name, ok := n.segmentAllocations[n.getSegment()]; ok {
-		interpreter := &Interpreter{
-			Name:      n.Name + "-" + name,
-			Salt:      n.Name + "." + name,
-			Code:      n.currentExperiments[name],
-			Evaluated: false,
-			Inputs:    n.Inputs,
-			Outputs:   out,
-			Overrides: map[string]interface{}{},
-		}
-		return interpreter.Run()
+	interpreter := &Interpreter{
+		Name:      n.Name,
+		Salt:      n.Name,
+		Code:      n.defaultExperiment,
+		Evaluated: false,
+		Inputs:    n.Inputs,
+		Outputs:   map[string]interface{}{},
+		Overrides: map[string]interface{}{},
 	}
 
-	return out, true
+	if name, ok := n.segmentAllocations[n.getSegment()]; ok {
+		interpreter.Name = n.Name + "-" + name
+		interpreter.Salt = n.Name + "." + name
+		interpreter.Code = n.currentExperiments[name]
+	}
+
+	interpreter.Run()
+	return interpreter
+}
+
+func (n *SimpleNamespace) AddDefaultExperiment(code map[string]interface{}) {
+	n.defaultExperiment = code
 }
 
 func (n *SimpleNamespace) AddExperiment(name string, code map[string]interface{}, segments int) error {
@@ -77,16 +86,18 @@ func (n *SimpleNamespace) RemoveExperiment(name string) error {
 		return fmt.Errorf("Experiment %v does not exists in the namespace\n", name)
 	}
 
-	segmentsToFree := make([]uint64, 0, n.NumSegments)
+	segmentsToFree := make([]int, 0, n.NumSegments)
 	for i := range n.segmentAllocations {
 		if n.segmentAllocations[i] == name {
-			segmentsToFree = append(segmentsToFree, uint64(i))
+			segmentsToFree = append(segmentsToFree, int(i))
 		}
 	}
 
 	for i := range segmentsToFree {
 		n.availableSegments = append(n.availableSegments, segmentsToFree[i])
 	}
+
+	sort.Ints(n.availableSegments)
 
 	delete(n.currentExperiments, name)
 	return nil
@@ -103,8 +114,13 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	}
 
 	// Compile Sample operator
+	var availableSegmentsAsInterface []interface{} = make([]interface{}, len(n.availableSegments))
+	for i, d := range n.availableSegments {
+		availableSegmentsAsInterface[i] = d
+	}
+
 	args := make(map[string]interface{})
-	args["choices"] = n.availableSegments
+	args["choices"] = availableSegmentsAsInterface
 	args["unit"] = name
 	args["salt"] = n.Name
 	args["draws"] = segments
@@ -116,7 +132,7 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	for i := range shuffle {
 		j := shuffle[i].(int)
 		n.segmentAllocations[uint64(j)] = name
-		n.availableSegments = removeByValue(n.availableSegments, j).([]interface{})
+		n.availableSegments = deallocateSegments(n.availableSegments, j)
 	}
 }
 
@@ -139,4 +155,16 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
 	return s.execute(args, expt).(uint64)
+}
+
+func deallocateSegments(allocated []int, segmentToRemove int) []int {
+	for i := range allocated {
+		if allocated[i] == segmentToRemove {
+			outputs := make([]int, 0, len(allocated)-1)
+			outputs = append(outputs, allocated[:i]...)
+			outputs = append(outputs, allocated[i+1:]...)
+			return outputs
+		}
+	}
+	return allocated
 }

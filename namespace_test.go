@@ -17,6 +17,7 @@
 package planout
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -33,13 +34,25 @@ func TestSimpleNamespace(t *testing.T) {
 	n.AddExperiment("random ops", js2, 10)
 	n.AddExperiment("simple", js3, 80)
 
+	x := n.availableSegments
+
 	seg := n.getSegment()
 	if seg != 92 {
-		t.Errorf("Incorrect allocation (%v) for test-id. Expected 53.", seg)
+		t.Errorf("Incorrect allocation (%v) for test-id. Expected 92.", seg)
 	}
 
-	if out, ok := n.Run(); !ok || out["output"] != "test" {
-		t.Errorf("Namespace run was not successful out:[%s]", out)
+	interpreter := n.Run()
+	output, exists := interpreter.Get("output")
+
+	if !exists || output != "test" {
+		t.Errorf("Namespace run was not successful out:[%+v]\n", interpreter)
 	}
 
+	n.RemoveExperiment("random ops")
+	n.AddExperiment("random ops", js2, 10)
+	y := n.availableSegments
+
+	if reflect.DeepEqual(x, y) == false {
+		t.Errorf("Removing and re-adding experiment to a namespace resulted in mismatched allocations. X: %v, Y: %v\n", x, y)
+	}
 }
