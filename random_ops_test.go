@@ -21,9 +21,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/rand"
 	"reflect"
 	"testing"
 	"text/template"
+	"time"
 )
 
 func TestRandomOps(t *testing.T) {
@@ -254,8 +256,9 @@ func randomExperiment(t *testing.T, textTemplate string, data interface{}, runs 
 
 	x := make([]interface{}, runs)
 	h := Histogram{hist: map[string]int{}}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < runs; i++ {
-		expt, _ := runExperimentWithInputs(code.Bytes(), map[string]interface{}{"i": i})
+		expt, _ := runExperimentWithInputs(code.Bytes(), map[string]interface{}{"i": r.Intn(math.MaxUint32)})
 		x[i], _ = expt.Get("x")
 		h.add(x[i])
 	}

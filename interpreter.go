@@ -33,9 +33,12 @@ type Interpreter struct {
 	parameterSalt              string
 }
 
-func (interpreter *Interpreter) Run() (map[string]interface{}, bool) {
-	if interpreter.Evaluated {
-		return interpreter.Outputs, true
+func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool) {
+
+	if len(force) > 0 && force[0] == false {
+		if interpreter.Evaluated {
+			return interpreter.Outputs, true
+		}
 	}
 
 	defer func() (map[string]interface{}, bool) {

@@ -172,7 +172,7 @@ func (s *randomFloat) execute(args map[string]interface{}, interpreter *Interpre
 type randomInteger struct{}
 
 func (s *randomInteger) execute(args map[string]interface{}, interpreter *Interpreter) interface{} {
-	existOrPanic(args, []string{"unit"}, "RandomFloat")
+	existOrPanic(args, []string{"unit"}, "RandomInteger")
 	min_val, _ := toNumber(getOrElse(args, "min", 0.0))
 	max_val, _ := toNumber(getOrElse(args, "max", 0.0))
 	mod_val := uint64(max_val) - uint64(min_val) + 1

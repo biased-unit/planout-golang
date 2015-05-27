@@ -22,17 +22,29 @@ import (
 )
 
 func TestSimpleNamespace(t *testing.T) {
-	js1 := readTest("test/simple_ops.json")
-	js2 := readTest("test/random_ops.json")
-	js3 := readTest("test/simple.json")
+
+	constructInterpreter := func(filename string, name, salt string, inputs map[string]interface{}) *Interpreter {
+		js := readTest(filename)
+		return &Interpreter{Name: name,
+			Salt:      salt,
+			Inputs:    inputs,
+			Overrides: make(map[string]interface{}),
+			Outputs:   make(map[string]interface{}),
+			Code:      js,
+		}
+	}
 
 	inputs := make(map[string]interface{})
 	inputs["userid"] = "test-id"
 
+	e1 := constructInterpreter("test/simple_ops.json", "simple_ops", "simple_ops_salt", inputs)
+	e2 := constructInterpreter("test/random_ops.json", "simple_ops", "simple_ops_salt", inputs)
+	e3 := constructInterpreter("test/simple.json", "simple_ops", "simple_ops_salt", inputs)
+
 	n := NewSimpleNamespace("simple_namespace", 100, "userid", inputs)
-	n.AddExperiment("simple ops", js1, 10)
-	n.AddExperiment("random ops", js2, 10)
-	n.AddExperiment("simple", js3, 80)
+	n.AddExperiment("simple ops", e1, 10)
+	n.AddExperiment("random ops", e2, 10)
+	n.AddExperiment("simple", e3, 80)
 
 	x := n.availableSegments
 
@@ -49,10 +61,23 @@ func TestSimpleNamespace(t *testing.T) {
 	}
 
 	n.RemoveExperiment("random ops")
-	n.AddExperiment("random ops", js2, 10)
+	n.AddExperiment("random ops", e2, 10)
 	y := n.availableSegments
 
 	if reflect.DeepEqual(x, y) == false {
 		t.Errorf("Removing and re-adding experiment to a namespace resulted in mismatched allocations. X: %v, Y: %v\n", x, y)
+	}
+
+	unitstr := generateString()
+	inputs["userid"] = unitstr
+	n = NewSimpleNamespace("simple_namespace", 100, "userid", inputs)
+	n.AddExperiment("simple ops", e1, 10)
+	n.AddExperiment("random ops", e2, 10)
+	n.AddExperiment("simple", e3, 80)
+	n.RemoveExperiment("random ops")
+	n.RemoveExperiment("simple ops")
+	n.RemoveExperiment("simple")
+	if len(n.availableSegments) != 100 {
+		t.Errorf("Expected all segments to be available. Actual %d\n", len(n.availableSegments))
 	}
 }

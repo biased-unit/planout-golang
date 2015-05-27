@@ -17,14 +17,22 @@ type SimpleNamespace struct {
 	Inputs             map[string]interface{}
 	segmentAllocations map[uint64]string
 	availableSegments  []int
-	currentExperiments map[string]interface{}
-	defaultExperiment  map[string]interface{}
+	currentExperiments map[string]*Interpreter
+	defaultExperiment  *Interpreter
+	selectedExperiment uint64
 }
 
 func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs map[string]interface{}) SimpleNamespace {
 	avail := make([]int, 0, numSegments)
 	for i := 0; i < numSegments; i++ {
 		avail = append(avail, i)
+	}
+
+	noop := &Interpreter{
+		Name:   name,
+		Salt:   name,
+		Inputs: inputs,
+		Code:   make(map[string]interface{}),
 	}
 
 	return SimpleNamespace{
@@ -34,37 +42,30 @@ func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs
 		Inputs:             inputs,
 		segmentAllocations: make(map[uint64]string),
 		availableSegments:  avail,
-		currentExperiments: make(map[string]interface{}),
+		currentExperiments: make(map[string]*Interpreter),
+		selectedExperiment: uint64(numSegments + 1),
+		defaultExperiment:  noop,
 	}
 }
 
 func (n *SimpleNamespace) Run() *Interpreter {
-	// Is the unit allocated to an experiment ?
-	interpreter := &Interpreter{
-		Name:      n.Name,
-		Salt:      n.Name,
-		Code:      n.defaultExperiment,
-		Evaluated: false,
-		Inputs:    n.Inputs,
-		Outputs:   map[string]interface{}{},
-		Overrides: map[string]interface{}{},
-	}
+	interpreter := n.defaultExperiment
 
 	if name, ok := n.segmentAllocations[n.getSegment()]; ok {
-		interpreter.Name = n.Name + "-" + name
-		interpreter.Salt = n.Name + "." + name
-		interpreter.Code = n.currentExperiments[name]
+		interpreter = n.currentExperiments[name]
+		interpreter.Name = n.Name + "-" + interpreter.Name
+		interpreter.Salt = n.Name + "." + interpreter.Name
 	}
 
 	interpreter.Run()
 	return interpreter
 }
 
-func (n *SimpleNamespace) AddDefaultExperiment(code map[string]interface{}) {
-	n.defaultExperiment = code
+func (n *SimpleNamespace) AddDefaultExperiment(defaultExperiment *Interpreter) {
+	n.defaultExperiment = defaultExperiment
 }
 
-func (n *SimpleNamespace) AddExperiment(name string, code map[string]interface{}, segments int) error {
+func (n *SimpleNamespace) AddExperiment(name string, interpreter *Interpreter, segments int) error {
 	avail := len(n.availableSegments)
 	if avail < segments {
 		return fmt.Errorf("Not enough segments available %v to add the new experiment %v\n", avail, name)
@@ -76,7 +77,7 @@ func (n *SimpleNamespace) AddExperiment(name string, code map[string]interface{}
 
 	n.allocateExperiment(name, segments)
 
-	n.currentExperiments[name] = code
+	n.currentExperiments[name] = interpreter
 	return nil
 }
 
@@ -137,6 +138,11 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 }
 
 func (n *SimpleNamespace) getSegment() uint64 {
+
+	if n.selectedExperiment != uint64(n.NumSegments+1) {
+		return n.selectedExperiment
+	}
+
 	// generate random integer min=0, max=num_segments, unit=primary_unit
 	// RandomInteger(min=0, max=self.num_segments, unit=itemgetter(*self.primary_unit)(self.inputs))
 	expt := &Interpreter{
@@ -154,17 +160,18 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	args["max"] = n.NumSegments - 1
 	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
-	return s.execute(args, expt).(uint64)
+	n.selectedExperiment = s.execute(args, expt).(uint64)
+	return n.selectedExperiment
 }
 
 func deallocateSegments(allocated []int, segmentToRemove int) []int {
-	for i := range allocated {
-		if allocated[i] == segmentToRemove {
-			outputs := make([]int, 0, len(allocated)-1)
-			outputs = append(outputs, allocated[:i]...)
-			outputs = append(outputs, allocated[i+1:]...)
-			return outputs
-		}
+	i := 0
+	n := len(allocated)
+	for i < n && allocated[i] != segmentToRemove {
+		i = i + 1
+	}
+	if i < n {
+		allocated = append(allocated[:i], allocated[i+1:]...)
 	}
 	return allocated
 }
