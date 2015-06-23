@@ -19,6 +19,7 @@ package planout
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -80,6 +81,42 @@ func TestCoreOps(t *testing.T) {
 	expt, _ = runExperiment([]byte(`
 	 	{"op": "set", "var": "x", "value": {"op": "array", "values": [4, 5, "a"]}}`))
 	x, _ = expt.Get("x")
+
+	// Test Dictionary
+	expt, _ = runExperiment([]byte(`
+	{"op": "set", "var": "x", "value": {"op": "map", "a": 2, "b": "foo", "c": [0, 1, 2]}}`))
+	x, _ = expt.Get("x")
+	if x == nil {
+		t.Errorf("Variable x. Expected a map. Actual nil.\n")
+	} else {
+		x_map, ok := x.(map[string]interface{})
+		if !ok {
+			t.Errorf("Variable x. Expected of type map. Actual %v\n", reflect.TypeOf(x))
+		}
+		foo, ok := x_map["b"]
+		if !ok {
+			t.Errorf("Variable x['b']. Expected 'foo'. Does not exists.\n")
+		}
+		if foo != "foo" {
+			t.Errorf("Variable x['b']. Expected 'foo'. Actual %v\n", foo)
+		}
+	}
+
+	// Test empty dictionary
+	expt, _ = runExperiment([]byte(`
+	{"op": "set", "var": "x", "value": {"op": "map"}}`))
+	x, _ = expt.Get("x")
+	if x == nil {
+		t.Errorf("Variable x. Expected a map. Actual nil.\n")
+	} else {
+		x_map, ok := x.(map[string]interface{})
+		if !ok {
+			t.Errorf("Variable x. Expected of type map. Actual %v\n", reflect.TypeOf(x))
+		}
+		if len(x_map) != 0 {
+			t.Errorf("Variable x. Expected empty map. Actual %v\n", x_map)
+		}
+	}
 
 	// Test Condition
 	expt, _ = runExperiment([]byte(`

@@ -32,6 +32,7 @@ func init() {
 		"set":             &set{},
 		"get":             &get{},
 		"array":           &array{},
+		"map":             &dict{},
 		"index":           &index{},
 		"length":          &length{},
 		"coalesce":        &coalesce{},
@@ -125,6 +126,18 @@ func (s *array) execute(m map[string]interface{}, interpreter *Interpreter) inte
 	existOrPanic(m, []string{"values"}, "Array")
 	ret := interpreter.evaluate(m["values"])
 	return ret
+}
+
+type dict struct{}
+
+func (s *dict) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
+	dictionary := make(map[string]interface{})
+	for k, v := range m {
+		if k != "op" {
+			dictionary[k] = interpreter.evaluate(v)
+		}
+	}
+	return dictionary
 }
 
 type index struct{}

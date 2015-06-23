@@ -182,3 +182,50 @@ func TestSimpleOps(t *testing.T) {
 		t.Errorf("Variable 'z' '%v'. Expected 'test-string'\n", z2)
 	}
 }
+
+func TestMapOp(t *testing.T) {
+	js := readTest("test/map_operator.json")
+
+	data := Struct{Member: 101, String: "test-string"}
+	params := make(map[string]interface{})
+	params["struct"] = data
+
+	expt := &Interpreter{
+		Salt:      "global_salt",
+		Evaluated: false,
+		Inputs:    params,
+		Outputs:   map[string]interface{}{},
+		Overrides: map[string]interface{}{},
+		Code:      js,
+	}
+
+	_, ok := expt.Run()
+	if !ok {
+		t.Errorf("Error running experiment 'test/map_operator.json'\n")
+		return
+	}
+
+	x, exists := expt.Get("x")
+	if !exists {
+		t.Errorf("TestMapOp: Expected variable 'x' to be assigned.\n")
+	}
+	x_map, ok := x.(map[string]interface{})
+	if !ok {
+		t.Errorf("TestMapOp: Expected variable 'x' to be of type map. Actual %v\n", reflect.TypeOf(x))
+	}
+	b, exists := x_map["b"]
+	if !exists {
+		t.Errorf("TestMapOp: Expected variable 'b' inside the map 'x' to be assigned.\n")
+	}
+	b_map, ok := b.(map[string]interface{})
+	if !ok {
+		t.Errorf("TestMapOp: Expected variable 'b' to be of type map. Actual %v\n", reflect.TypeOf(b))
+	}
+	bar, exists := b_map["bar"]
+	if !exists {
+		t.Errorf("TestMapOp: Expected variable 'bar' inside the map 'b' to be assigned.\n")
+	}
+	if bar != "inside" {
+		t.Errorf("TestMapOp: Variable='bar'. Expected value='inside' Actual=%v.\n", bar)
+	}
+}

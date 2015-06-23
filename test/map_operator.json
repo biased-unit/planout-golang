@@ -1,0 +1,33 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "foo",
+      "value": "inside"
+    },
+    {
+      "op": "set",
+      "var": "baz",
+      "value": {
+        "bar": {
+          "op": "get",
+          "var": "foo"
+        },
+        "op": "map"
+      }
+    },
+    {
+      "op": "set",
+      "var": "x",
+      "value": {
+        "a": 2,
+        "b": {
+          "op": "get",
+          "var": "baz"
+        },
+        "op": "map"
+      }
+    }
+  ]
+}
