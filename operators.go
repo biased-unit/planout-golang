@@ -205,7 +205,7 @@ func (s *index) execute(m map[string]interface{}, interpreter *Interpreter) inte
 					case reflect.Bool:
 						return value.Bool()
 					default:
-						return value.Convert(field.Type)
+						return value.Convert(field.Type).Interface()
 					}
 				}
 			}
