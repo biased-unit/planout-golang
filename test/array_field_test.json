@@ -1,0 +1,37 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "h",
+      "value": {
+        "op": "get",
+        "var": "s"
+      }
+    },
+    {
+      "op": "set",
+      "var": "array",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "h"
+        },
+        "index": "Array"
+      }
+    },
+    {
+      "op": "set",
+      "var": "element",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "array"
+        },
+        "index": 0
+      }
+    }
+  ]
+}

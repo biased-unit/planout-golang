@@ -55,3 +55,41 @@ func TestNestedIndex(t *testing.T) {
 		t.Fail()
 	}
 }
+
+type StructWithArray struct {
+	Array []*int
+}
+
+func TestArrayInStruct(t *testing.T) {
+	data, err := ioutil.ReadFile("test/array_field_test.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var js map[string]interface{}
+	err = json.Unmarshal(data, &js)
+	if (err != nil) {
+		t.Fatal(err)
+	}
+
+	inputs := make(map[string]interface{})
+	i := 123
+	inputs["s"] = &StructWithArray{
+		Array: []*int{&i},
+	}
+
+	exp := &Interpreter{
+		Name: "test_array_field",
+		Salt: "blasdfalks",
+		Inputs: inputs,
+		Outputs: make(map[string]interface{}),
+		Code: js,
+	}
+
+	if _, ok := exp.Run(); !ok {
+		t.Fatal("Experiment run failed")
+	}
+
+	if elem := *(exp.Outputs["element"].(*int)); elem != 123 {
+		t.Fail()
+	}
+}
