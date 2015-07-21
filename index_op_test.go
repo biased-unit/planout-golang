@@ -93,3 +93,42 @@ func TestArrayInStruct(t *testing.T) {
 		t.Fail()
 	}
 }
+
+type StructWithMap struct {
+	Map map[string]string
+}
+
+func TestMapField(t *testing.T) {
+	data, err := ioutil.ReadFile("test/map_index_test.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var js map[string]interface{}
+	err = json.Unmarshal(data, &js)
+	if (err != nil) {
+		t.Fatal(err)
+	}
+
+	inputs := make(map[string]interface{})
+	mapField := make(map[string]string)
+	mapField["key"] = "value"
+	inputs["s"] = &StructWithMap{
+		Map: mapField,
+	}
+
+	exp := &Interpreter{
+		Name: "test_map_index",
+		Salt: "asdfkhjaslkdfjh",
+		Inputs: inputs,
+		Outputs: make(map[string]interface{}),
+		Code: js,
+	}
+
+	if _, ok := exp.Run(); !ok {
+		t.Fatal("Experiment run failed")
+	}
+
+	if elem := exp.Outputs["element"]; elem != "value" {
+		t.Fail()
+	}
+}

@@ -163,11 +163,11 @@ func (s *index) execute(m map[string]interface{}, interpreter *Interpreter) inte
 		return unwrapValue(base_type.Index(int(index_num)))
 	}
 
-	if index_str, isStr := toString(index); isStr {
-		if base_map, isMap := base.(map[string]interface{}); isMap {
-			return base_map[index_str]
-		}
+	if base_type.Kind() == reflect.Map {
+		return unwrapValue(base_type.MapIndex(reflect.ValueOf(index)))
+	}
 
+	if index_str, isStr := toString(index); isStr {
 		if base_type.Kind() != reflect.Invalid && base_type.Kind() == reflect.Struct {
 			if field, hasField := base_type.Type().FieldByName(strings.Title(index_str)); hasField {
 				// Only use exported fields
