@@ -95,7 +95,7 @@ func TestArrayInStruct(t *testing.T) {
 }
 
 type StructWithMap struct {
-	Map map[string]string
+	Map map[string]int64
 }
 
 func TestMapField(t *testing.T) {
@@ -110,8 +110,8 @@ func TestMapField(t *testing.T) {
 	}
 
 	inputs := make(map[string]interface{})
-	mapField := make(map[string]string)
-	mapField["key"] = "value"
+	mapField := make(map[string]int64)
+	mapField["key"] = 42
 	inputs["s"] = &StructWithMap{
 		Map: mapField,
 	}
@@ -128,7 +128,46 @@ func TestMapField(t *testing.T) {
 		t.Fatal("Experiment run failed")
 	}
 
-	if elem := exp.Outputs["element"]; elem != "value" {
+	if elem := exp.Outputs["element"]; elem != int64(42) {
+		t.Fail()
+	}
+
+	if exp.Outputs["empty"] != nil {
+		t.Fail()
+	}
+}
+
+type StructWithNilField struct {
+	None interface{}
+}
+
+func TestStructWithNilField(t *testing.T) {
+	data, err := ioutil.ReadFile("test/struct_with_nil_field.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var js map[string]interface{}
+	err = json.Unmarshal(data, &js)
+	if (err != nil) {
+		t.Fatal(err)
+	}
+
+	inputs := make(map[string]interface{})
+	inputs["struct"] = &StructWithNilField{}
+
+	exp := &Interpreter{
+		Name: "struct with nil field",
+		Salt: "safasdf",
+		Inputs: inputs,
+		Outputs: make(map[string]interface{}),
+		Code: js,
+	}
+
+	if _, ok := exp.Run(); !ok {
+		t.Fatal("Experiment run failed")
+	}
+
+	if exp.Outputs["nil"] != nil {
 		t.Fail()
 	}
 }

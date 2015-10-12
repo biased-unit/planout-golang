@@ -213,7 +213,11 @@ func unwrapValue(value reflect.Value) interface{} {
 	case reflect.Bool:
 		return value.Bool()
 	default:
-		return value.Interface()
+		if value.IsValid() {
+			return value.Interface()
+		} else {
+			return nil
+		}
 	}
 }
 

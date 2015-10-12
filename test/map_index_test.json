@@ -32,6 +32,18 @@
         },
         "index": "key"
       }
+    },
+    {
+      "op": "set",
+      "var": "empty",
+      "value": {
+        "op": "index",
+        "base": {
+          "op": "get",
+          "var": "map"
+        },
+        "index": "not there"
+      }
     }
   ]
 }
