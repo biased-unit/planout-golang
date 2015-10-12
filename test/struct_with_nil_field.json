@@ -1,0 +1,12 @@
+{
+  "op": "set",
+  "var": "nil",
+  "value": {
+    "op": "index",
+    "base": {
+      "op": "get",
+      "var": "struct"
+    },
+    "index": "None"
+  }
+}
