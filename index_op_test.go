@@ -6,6 +6,27 @@ import (
 	"encoding/json"
 )
 
+func getInterpreter(filename string) (*Interpreter, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var js map[string]interface{}
+	err = json.Unmarshal(data, &js)
+	if (err != nil) {
+		return nil, err
+	}
+
+	return &Interpreter{
+		Name: "the name",
+		Salt: "the salt",
+		Evaluated: false,
+		Inputs: make(map[string]interface{}),
+		Outputs: make(map[string]interface{}),
+		Code: js,
+	}, nil
+}
+
 type Inner struct {
 	Value string
 }
@@ -19,32 +40,17 @@ type NestedStruct struct {
 }
 
 func TestNestedIndex(t *testing.T) {
-	data, err := ioutil.ReadFile("test/nested_index.json")
+	exp, err := getInterpreter("test/nested_index.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var js map[string]interface{}
-	err = json.Unmarshal(data, &js)
-	if (err != nil) {
-		t.Fatal(err)
-	}
 
-	inputs := make(map[string]interface{})
-	inputs["s"] = &NestedStruct{
+	exp.Inputs["s"] = &NestedStruct{
 		Outer: &Outer{
 			Inner: &Inner{
 				Value: "foo",
 			},
 		},
-	}
-
-	exp := &Interpreter{
-		Name: "nested_test",
-		Salt: "salt123",
-		Evaluated: false,
-		Inputs: inputs,
-		Outputs: make(map[string]interface{}),
-		Code: js,
 	}
 
 	if _, ok := exp.Run(); !ok {
@@ -61,28 +67,14 @@ type StructWithArray struct {
 }
 
 func TestArrayInStruct(t *testing.T) {
-	data, err := ioutil.ReadFile("test/array_field_test.json")
+	exp, err := getInterpreter("test/array_field_test.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var js map[string]interface{}
-	err = json.Unmarshal(data, &js)
-	if (err != nil) {
-		t.Fatal(err)
-	}
 
-	inputs := make(map[string]interface{})
-	i := 123
-	inputs["s"] = &StructWithArray{
+	i := int(123)
+	exp.Inputs["s"] = &StructWithArray{
 		Array: []*int{&i},
-	}
-
-	exp := &Interpreter{
-		Name: "test_array_field",
-		Salt: "blasdfalks",
-		Inputs: inputs,
-		Outputs: make(map[string]interface{}),
-		Code: js,
 	}
 
 	if _, ok := exp.Run(); !ok {
@@ -99,29 +91,15 @@ type StructWithMap struct {
 }
 
 func TestMapField(t *testing.T) {
-	data, err := ioutil.ReadFile("test/map_index_test.json")
+	exp, err := getInterpreter("test/map_index_test.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var js map[string]interface{}
-	err = json.Unmarshal(data, &js)
-	if (err != nil) {
-		t.Fatal(err)
-	}
 
-	inputs := make(map[string]interface{})
 	mapField := make(map[string]int64)
 	mapField["key"] = 42
-	inputs["s"] = &StructWithMap{
+	exp.Inputs["s"] = &StructWithMap{
 		Map: mapField,
-	}
-
-	exp := &Interpreter{
-		Name: "test_map_index",
-		Salt: "asdfkhjaslkdfjh",
-		Inputs: inputs,
-		Outputs: make(map[string]interface{}),
-		Code: js,
 	}
 
 	if _, ok := exp.Run(); !ok {
@@ -142,26 +120,12 @@ type StructWithNilField struct {
 }
 
 func TestStructWithNilField(t *testing.T) {
-	data, err := ioutil.ReadFile("test/struct_with_nil_field.json")
+	exp, err := getInterpreter("test/struct_with_nil_field.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var js map[string]interface{}
-	err = json.Unmarshal(data, &js)
-	if (err != nil) {
-		t.Fatal(err)
-	}
 
-	inputs := make(map[string]interface{})
-	inputs["struct"] = &StructWithNilField{}
-
-	exp := &Interpreter{
-		Name: "struct with nil field",
-		Salt: "safasdf",
-		Inputs: inputs,
-		Outputs: make(map[string]interface{}),
-		Code: js,
-	}
+	exp.Inputs["struct"] = &StructWithNilField{}
 
 	if _, ok := exp.Run(); !ok {
 		t.Fatal("Experiment run failed")
