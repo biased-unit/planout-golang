@@ -1,9 +1,9 @@
 package planout
 
 import (
-	"testing"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"testing"
 )
 
 func getInterpreter(filename string) (*Interpreter, error) {
@@ -13,17 +13,17 @@ func getInterpreter(filename string) (*Interpreter, error) {
 	}
 	var js map[string]interface{}
 	err = json.Unmarshal(data, &js)
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
 
 	return &Interpreter{
-		Name: "the name",
-		Salt: "the salt",
+		Name:      "the name",
+		Salt:      "the salt",
 		Evaluated: false,
-		Inputs: make(map[string]interface{}),
-		Outputs: make(map[string]interface{}),
-		Code: js,
+		Inputs:    make(map[string]interface{}),
+		Outputs:   make(map[string]interface{}),
+		Code:      js,
 	}, nil
 }
 
@@ -57,7 +57,7 @@ func TestNestedIndex(t *testing.T) {
 		t.Fatal("Failed to run experiment")
 	}
 
-	if (exp.Outputs["out"] != "foo") {
+	if exp.Outputs["out"] != "foo" {
 		t.Fail()
 	}
 }
