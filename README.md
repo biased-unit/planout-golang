@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/URXtech/planout-golang.svg?branch=master)](https://travis-ci.org/URXtech/planout-golang)
+[![Build Status](https://travis-ci.org/GregBowyer/planout-golang.svg?branch=master)](https://travis-ci.org/GregBowyer/planout-golang)
 
 (Multi Variate Testing) interpreter for [PlanOut](http://github.com/facebook/planout) code written in Golang
 
@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"github.com/URXtech/planout-golang"
+	"github.com/GregBowyer/planout-golang"
 )
 
 // Helper function to generate random string.
