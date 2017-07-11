@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/GregBowyer/planout-golang.svg?branch=master)](https://travis-ci.org/GregBowyer/planout-golang)
+[![Build Status](https://travis-ci.org/biased-unit/planout-golang.svg?branch=master)](https://travis-ci.org/biased-unit/planout-golang)
 
 (Multi Variate Testing) interpreter for [PlanOut](http://github.com/facebook/planout) code written in Golang
 
