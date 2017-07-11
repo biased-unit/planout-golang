@@ -427,8 +427,8 @@ type mod struct{}
 func (s *mod) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"left", "right"}, "Modulo")
 	var ret int64 = 0
-	lhs := interpreter.evaluate(m["left"]).(float64)
-	rhs := interpreter.evaluate(m["right"]).(float64)
+	lhs, _ := toNumber(interpreter.evaluate(m["left"]))
+	rhs, _ := toNumber(interpreter.evaluate(m["right"]))
 	ret = int64(lhs) % int64(rhs)
 	return float64(ret)
 }
