@@ -26,17 +26,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"github.com/GregBowyer/planout-golang"
+	"github.com/biased-unit/planout-golang"
 )
 
-// Helper function to generate random string.
-func generateString() string {
-	s := make([]byte, 10)
-	for j := 0; j < 10; j++ {
-		s[j] = 'a' + byte(rand.Int()%26)
-	}
-	return string(s)
+// Example input structure
+type ExampleStruct struct {
+    Member int
+    String string
 }
 
 func main() {
@@ -53,23 +49,25 @@ func main() {
 	// Set the necessary input parameters required to run
 	// the experiments. For instance, simple_ops.json expects
 	// the value for 'userid' to be set.
+    example := ExampleStruct{Member: 101, String: "test-string"}
 	params := make(map[string]interface{})
 	params["experiment_salt"] = "expt"
 	params["userid"] = generateString()
+    params["struct"] = example
 
 	// Construct an instance of the Interpreter object.
 	// Initialize Salt and set Inputs to params.
 	expt := &planout.Interpreter{
-		Salt: "global_salt",
-		Evaluated:      false,
-		Inputs:         params,
-		Outputs:        map[string]interface{}{},
-		Overrides:      map[string]interface{}{},
-        Code: js,
+		Salt:       "global_salt",
+		Evaluated:  false,
+		Inputs:     params,
+		Outputs:    map[string]interface{}{},
+		Overrides:  map[string]interface{}{},
+        Code:       js,
 	}
-	
+
 	// Call the Run() method on the Interpreter instance.
-	// The output of the run will contain the dictionary 
+	// The output of the run will contain the dictionary
 	// of variables and associated values that were evaluated
 	// as part of the experiment.
 	output, ok := expt.Run()
@@ -78,7 +76,7 @@ func main() {
 	} else {
 		fmt.Printf("Params: %v\n", params)
 	}
-	
+
 	fmt.Println(output)
 }
 ```
