@@ -91,11 +91,8 @@ func (n *SimpleNamespace) RemoveExperiment(name string) error {
 	for i := range n.segmentAllocations {
 		if n.segmentAllocations[i] == name {
 			segmentsToFree = append(segmentsToFree, int(i))
+			delete(n.segmentAllocations, i)
 		}
-	}
-
-	for _, val := range segmentsToFree {
-		delete(n.segmentAllocations, uint64(val))
 	}
 
 	for i := range segmentsToFree {
