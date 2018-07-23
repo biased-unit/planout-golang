@@ -82,12 +82,11 @@ func TestSimpleNamespace(t *testing.T) {
 	}
 
 
-	testUID := generateString()
-	inputs["userid"] = testUID
-	n = NewSimpleNamespace("test_removing_namespace", 20, "userid", inputs)
+	inputs["userid"] = "test-id"
+	n = NewSimpleNamespace("test_removing_namespace", 100, "userid", inputs)
+	n.AddExperiment("simple ops", e1, 10)
 	n.AddExperiment("random ops", e2, 10)
-	n.AddExperiment("simple", e3, 10)
-	n.AddDefaultExperiment(e1)
+	n.AddExperiment("simple", e3, 80)
 	interpreter = n.Run()
 	for _, v := range n.segmentAllocations {
 		if v == "simple" {
