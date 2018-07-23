@@ -80,4 +80,33 @@ func TestSimpleNamespace(t *testing.T) {
 	if len(n.availableSegments) != 100 {
 		t.Errorf("Expected all segments to be available. Actual %d\n", len(n.availableSegments))
 	}
+
+
+	testUID := generateString()
+	inputs["userid"] = testUID
+	n = NewSimpleNamespace("test_removing_namespace", 20, "userid", inputs)
+	n.AddExperiment("random ops", e2, 10)
+	n.AddExperiment("simple", e3, 10)
+	n.AddDefaultExperiment(e1)
+	interpreter = n.Run()
+	for _, v := range n.segmentAllocations {
+		if v == "simple" {
+			t.Log("added [simple] exp\n")
+		}
+	}
+	val, ok := interpreter.Get("output")
+	if !ok || val!= "test" {
+		t.Errorf("Namespace run was not successful out:[%+v]\n", interpreter)
+	}
+	n.RemoveExperiment("simple")
+	interpreter = n.Run()
+	for _, v := range n.segmentAllocations {
+		if v == "simple" {
+			t.Error("didn't remove [simple] exp\n")
+		}
+	}
+	val, ok = interpreter.Get("output")
+	if ok {
+		t.Errorf("Namespace run was not successful out:[%+v]\n", interpreter)
+	}
 }
