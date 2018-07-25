@@ -213,9 +213,12 @@ func toNumber(value interface{}) (float64, bool) {
 			x = float64(value.(float32))
 		}
 		return x, true
-	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+	case int, int8, int16, int32, int64:
 		i := reflect.ValueOf(value)
 		return float64(i.Int()), true
+	case uint, uint8, uint16, uint32, uint64:
+		i := reflect.ValueOf(value)
+		return float64(i.Uint()), true
 	case bool:
 		if value {
 			return 1, true

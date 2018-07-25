@@ -108,4 +108,5 @@ func TestSimpleNamespace(t *testing.T) {
 	if ok {
 		t.Errorf("Namespace run was not successful out:[%+v]\n", interpreter)
 	}
+
 }
