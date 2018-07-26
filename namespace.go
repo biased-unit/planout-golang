@@ -61,8 +61,8 @@ func (n *SimpleNamespace) Run() *Interpreter {
 
 	if name, ok := n.segmentAllocations[n.getSegment()]; ok {
 		interpreter = n.currentExperiments[name]
-		interpreter.Name = n.Name + "-" + interpreter.Name
-		interpreter.Salt = n.Name + "." + interpreter.Name
+		//interpreter.Name = n.Name + "-" + interpreter.Name
+		//interpreter.Salt = n.Name + "." + interpreter.Name
 	}
 
 	interpreter.Run()
