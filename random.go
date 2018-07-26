@@ -18,7 +18,7 @@ package planout
 
 import (
 	"crypto/sha1"
-	"fmt"
+	"encoding/hex"
 	"strconv"
 )
 
@@ -28,7 +28,8 @@ func hash(in string) uint64 {
 	var x [20]byte = sha1.Sum([]byte(in))
 
 	// Get the first 15 characters of the hexdigest.
-	var y string = fmt.Sprintf("%x", x[0:8])
+	//var y string = fmt.Sprintf("%x", x[0:8])
+	y := hex.EncodeToString(x[:8])
 	y = y[0 : len(y)-1]
 
 	// Convert hex string into uint64
