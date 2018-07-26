@@ -52,6 +52,7 @@ func (n *SimpleNamespace) SetInputs(inputs map[string]interface{})  {
 	for _, exp := range n.currentExperiments {
 		exp.Inputs = inputs
 	}
+	n.defaultExperiment.Inputs = inputs
 	n.Inputs = inputs
 }
 
