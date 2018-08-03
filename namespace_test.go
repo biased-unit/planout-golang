@@ -46,7 +46,7 @@ func TestSimpleNamespace(t *testing.T) {
 	n.AddExperiment("random ops", e2, 10)
 	n.AddExperiment("simple", e3, 80)
 
-	x := n.availableSegments
+	x := n.AvailableSegments
 
 	seg := n.getSegment()
 	if seg != 92 {
@@ -62,7 +62,7 @@ func TestSimpleNamespace(t *testing.T) {
 
 	n.RemoveExperiment("random ops")
 	n.AddExperiment("random ops", e2, 10)
-	y := n.availableSegments
+	y := n.AvailableSegments
 
 	if reflect.DeepEqual(x, y) == false {
 		t.Errorf("Removing and re-adding experiment to a namespace resulted in mismatched allocations. X: %v, Y: %v\n", x, y)
@@ -77,8 +77,8 @@ func TestSimpleNamespace(t *testing.T) {
 	n.RemoveExperiment("random ops")
 	n.RemoveExperiment("simple ops")
 	n.RemoveExperiment("simple")
-	if len(n.availableSegments) != 100 {
-		t.Errorf("Expected all segments to be available. Actual %d\n", len(n.availableSegments))
+	if len(n.AvailableSegments) != 100 {
+		t.Errorf("Expected all segments to be available. Actual %d\n", len(n.AvailableSegments))
 	}
 
 
@@ -88,7 +88,7 @@ func TestSimpleNamespace(t *testing.T) {
 	n.AddExperiment("random ops", e2, 10)
 	n.AddExperiment("simple", e3, 80)
 	interpreter = n.Run()
-	for _, v := range n.segmentAllocations {
+	for _, v := range n.SegmentAllocations {
 		if v == "simple" {
 			t.Log("added [simple] exp\n")
 		}
@@ -99,7 +99,7 @@ func TestSimpleNamespace(t *testing.T) {
 	}
 	n.RemoveExperiment("simple")
 	interpreter = n.Run()
-	for _, v := range n.segmentAllocations {
+	for _, v := range n.SegmentAllocations {
 		if v == "simple" {
 			t.Error("didn't remove [simple] exp\n")
 		}

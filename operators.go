@@ -102,7 +102,7 @@ type set struct{}
 func (s *set) execute(m map[string]interface{}, interpreter *Interpreter) interface{} {
 	existOrPanic(m, []string{"var", "value"}, "Set")
 	lhs := m["var"].(string)
-	interpreter.parameterSalt = lhs
+	interpreter.ParameterSalt = lhs
 	value := interpreter.evaluate(m["value"])
 	interpreter.Outputs[lhs] = value
 	return true

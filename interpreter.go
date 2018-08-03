@@ -30,7 +30,7 @@ type Interpreter struct {
 	Inputs, Outputs, Overrides map[string]interface{}
 	Code                       interface{}
 	Evaluated, InExperiment    bool
-	parameterSalt              string
+	ParameterSalt              string
 }
 
 func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool) {

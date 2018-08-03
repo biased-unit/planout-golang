@@ -74,7 +74,7 @@ func getUnit(args map[string]interface{}, interpreter *Interpreter) string {
 func getHash(args map[string]interface{}, interpreter *Interpreter, appended_units ...string) uint64 {
 
 	unitstr := getUnit(args, interpreter)
-	salt := getSalt(args, interpreter.Salt, interpreter.parameterSalt)
+	salt := getSalt(args, interpreter.Salt, interpreter.ParameterSalt)
 	name := generateNameToHash(unitstr, salt)
 
 	if len(appended_units) > 0 {
