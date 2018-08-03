@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/URXtech/planout-golang.svg?branch=master)](https://travis-ci.org/URXtech/planout-golang)
+[![Build Status](https://travis-ci.org/biased-unit/planout-golang.svg?branch=master)](https://travis-ci.org/biased-unit/planout-golang)
 
 (Multi Variate Testing) interpreter for [PlanOut](http://github.com/facebook/planout) code written in Golang
 
@@ -23,63 +23,61 @@ Here's an example program that consumes compiled [PlanOut](http://github.com/fac
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"math/rand"
-	"github.com/URXtech/planout-golang"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "github.com/biased-unit/planout-golang"
 )
 
-// Helper function to generate random string.
-func generateString() string {
-	s := make([]byte, 10)
-	for j := 0; j < 10; j++ {
-		s[j] = 'a' + byte(rand.Int()%26)
-	}
-	return string(s)
+// Example input structure
+type ExampleStruct struct {
+    Member int
+    String string
 }
 
 func main() {
-	// Read PlanOut code from file on disk.
-	data, _ := ioutil.ReadFile("test/simple_ops.json")
+    // Read PlanOut code from file on disk.
+    data, _ := ioutil.ReadFile("test/simple_ops.json")
 
-	// The PlanOut code is expected to use json.
-	// This format is the same as the output of
-	// the PlanOut compiler webapp
-	// http://facebook.github.io/planout/demo/planout-compiler.html
-	var js map[string]interface{}
-	json.Unmarshal(data, &js)
+    // The PlanOut code is expected to use json.
+    // This format is the same as the output of
+    // the PlanOut compiler webapp
+    // http://facebook.github.io/planout/demo/planout-compiler.html
+    var js map[string]interface{}
+    json.Unmarshal(data, &js)
 
-	// Set the necessary input parameters required to run
-	// the experiments. For instance, simple_ops.json expects
-	// the value for 'userid' to be set.
-	params := make(map[string]interface{})
-	params["experiment_salt"] = "expt"
-	params["userid"] = generateString()
+    // Set the necessary input parameters required to run
+    // the experiments. For instance, simple_ops.json expects
+    // the value for 'userid' to be set.
+    example := ExampleStruct{Member: 101, String: "test-string"}
+    params := make(map[string]interface{})
+    params["experiment_salt"] = "expt"
+    params["userid"] = generateString()
+    params["struct"] = example
 
-	// Construct an instance of the Interpreter object.
-	// Initialize Salt and set Inputs to params.
-	expt := &planout.Interpreter{
-		Salt: "global_salt",
-		Evaluated:      false,
-		Inputs:         params,
-		Outputs:        map[string]interface{}{},
-		Overrides:      map[string]interface{}{},
-        Code: js,
-	}
-	
-	// Call the Run() method on the Interpreter instance.
-	// The output of the run will contain the dictionary 
-	// of variables and associated values that were evaluated
-	// as part of the experiment.
-	output, ok := expt.Run()
-	if !ok {
-		fmt.Println("Failed to run the experiment")
-	} else {
-		fmt.Printf("Params: %v\n", params)
-	}
-	
-	fmt.Println(output)
+    // Construct an instance of the Interpreter object.
+    // Initialize Salt and set Inputs to params.
+    expt := &planout.Interpreter{
+        Salt:       "global_salt",
+        Evaluated:  false,
+        Inputs:     params,
+        Outputs:    map[string]interface{}{},
+        Overrides:  map[string]interface{}{},
+        Code:       js,
+    }
+
+    // Call the Run() method on the Interpreter instance.
+    // The output of the run will contain the dictionary
+    // of variables and associated values that were evaluated
+    // as part of the experiment.
+    output, ok := expt.Run()
+    if !ok {
+        fmt.Println("Failed to run the experiment")
+    } else {
+        fmt.Printf("Params: %v\n", params)
+    }
+
+    fmt.Println(output)
 }
 ```
 
@@ -132,17 +130,17 @@ This example consumes multiple compiled [PlanOut](http://github.com/facebook/pla
 package main
 
 func main() {
-	js1 := readTest("test/simple_ops.json")
-	js2 := readTest("test/random_ops.json")
-	js3 := readTest("test/simple.json")
+    js1 := readTest("test/simple_ops.json")
+    js2 := readTest("test/random_ops.json")
+    js3 := readTest("test/simple.json")
 
-	inputs := make(map[string]interface{})
-	inputs["userid"] = "test-id"
+    inputs := make(map[string]interface{})
+    inputs["userid"] = "test-id"
 
-	n := planout.NewSimpleNamespace("simple_namespace", 100, "userid", inputs)
-	n.AddExperiment("simple ops", js1, 10)
-	n.AddExperiment("random ops", js2, 10)
-	n.AddExperiment("simple", js3, 80)
+    n := planout.NewSimpleNamespace("simple_namespace", 100, "userid", inputs)
+    n.AddExperiment("simple ops", js1, 10)
+    n.AddExperiment("random ops", js2, 10)
+    n.AddExperiment("simple", js3, 80)
 
     out, ok = := n.Run()
 }

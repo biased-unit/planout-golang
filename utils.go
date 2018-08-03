@@ -213,6 +213,15 @@ func toNumber(value interface{}) (float64, bool) {
 			x = float64(value.(float32))
 		}
 		return x, true
+	case string:
+		var x float64
+		var err error
+		x, err = strconv.ParseFloat(value, 64)
+		if (err == nil) {
+			return x, true
+		} else {
+			return 0.0, false
+		}
 	case int, int8, int16, int32, int64:
 		i := reflect.ValueOf(value)
 		return float64(i.Int()), true
