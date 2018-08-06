@@ -60,7 +60,9 @@ func (n *SimpleNamespace) ReSet() {
 	for _, exp := range n.CurrentExperiments {
 		exp.ReSet()
 	}
+	defaultConfig := n.DefaultExperiment.Outputs
 	n.DefaultExperiment.ReSet()
+	n.DefaultExperiment.Outputs = defaultConfig
 	n.Inputs = make(map[string]interface{})
 	n.SelectedExperiment = uint64(n.NumSegments + 1)
 }
