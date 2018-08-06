@@ -48,12 +48,21 @@ func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs
 	}
 }
 
-func (n *SimpleNamespace) SetInputs(inputs map[string]interface{})  {
+func (n *SimpleNamespace) SetInputs(inputs map[string]interface{}) {
 	for _, exp := range n.CurrentExperiments {
 		exp.Inputs = inputs
 	}
 	n.DefaultExperiment.Inputs = inputs
 	n.Inputs = inputs
+}
+
+func (n *SimpleNamespace) ReSet() {
+	for _, exp := range n.CurrentExperiments {
+		exp.ReSet()
+	}
+	n.DefaultExperiment.ReSet()
+	n.Inputs = make(map[string]interface{})
+	n.SelectedExperiment = uint64(numSegments + 1)
 }
 
 func (n *SimpleNamespace) Run() *Interpreter {

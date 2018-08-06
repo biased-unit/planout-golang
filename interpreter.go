@@ -54,6 +54,11 @@ func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool
 	return interpreter.Outputs, true
 }
 
+func (interpreter *Interpreter) ReSet() {
+	interpreter.Inputs, interpreter.Overrides, interpreter.Outputs = make(map[string]interface{}), make(map[string]interface{}), make(map[string]interface{})
+	interpreter.Evaluated, interpreter.InExperiment = false, false
+}
+
 func (interpreter *Interpreter) Get(name string) (interface{}, bool) {
 	value, ok := interpreter.Overrides[name]
 	if ok {
