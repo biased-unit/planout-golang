@@ -62,7 +62,7 @@ func (n *SimpleNamespace) ReSet() {
 	}
 	n.DefaultExperiment.ReSet()
 	n.Inputs = make(map[string]interface{})
-	n.SelectedExperiment = uint64(numSegments + 1)
+	n.SelectedExperiment = uint64(n.NumSegments + 1)
 }
 
 func (n *SimpleNamespace) Run() *Interpreter {
