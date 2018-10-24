@@ -54,7 +54,10 @@ func (interpreter *Interpreter) Run(force ...bool) (map[string]interface{}, bool
 	return interpreter.Outputs, true
 }
 
+// ReSet方法重置experiment的三个参数Inputs、Overrides、Outputs，保留namespace的分区信息，就可以复用该namespace，
+// 而不是每次都重新生成一个namespace，耗费性能
 func (interpreter *Interpreter) ReSet() {
+	// 置空参数
 	interpreter.Inputs, interpreter.Overrides, interpreter.Outputs = make(map[string]interface{}), make(map[string]interface{}), make(map[string]interface{})
 	interpreter.Evaluated, interpreter.InExperiment = false, false
 }

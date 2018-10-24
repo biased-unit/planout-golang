@@ -48,6 +48,7 @@ func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs
 	}
 }
 
+// SetInputs方法可以手动设置namespace的输入值
 func (n *SimpleNamespace) SetInputs(inputs map[string]interface{}) {
 	for _, exp := range n.CurrentExperiments {
 		exp.Inputs = inputs
@@ -55,8 +56,9 @@ func (n *SimpleNamespace) SetInputs(inputs map[string]interface{}) {
 	n.DefaultExperiment.Inputs = inputs
 	n.Inputs = inputs
 }
-
+// ReSet方法重置该namespace中的实验信息
 func (n *SimpleNamespace) ReSet() {
+	// 遍历namespace下所有experiments，进行重置
 	for _, exp := range n.CurrentExperiments {
 		exp.ReSet()
 	}
