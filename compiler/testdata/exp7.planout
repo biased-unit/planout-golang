@@ -1,0 +1,26 @@
+show_feature = true;
+in_exp = false;
+if (userid == 123456789) {
+  in_exp = true;
+  if (post_has_photo == true) {
+    show_feature = false;
+  }
+  if (post_has_video == true) {
+    show_feature = false;
+  }
+  return true;
+}
+
+in_pop = extPred(ep="in_pop", userid=userid);
+if (!in_pop || userid == 0) {
+  return false;
+}
+
+in_exp = bernoulliTrial(p=1/100, unit=post_id);
+if (!in_exp) {
+  return false;
+}
+
+if (post_has_photo == true) {
+  show_feature = false;
+}

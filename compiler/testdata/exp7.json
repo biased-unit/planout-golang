@@ -1,0 +1,206 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "show_feature",
+      "value": true
+    },
+    {
+      "op": "set",
+      "var": "in_exp",
+      "value": false
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "equals",
+            "left": {
+              "op": "get",
+              "var": "userid"
+            },
+            "right": 123456789
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "in_exp",
+                "value": true
+              },
+              {
+                "op": "cond",
+                "cond": [
+                  {
+                    "if": {
+                      "op": "equals",
+                      "left": {
+                        "op": "get",
+                        "var": "post_has_photo"
+                      },
+                      "right": true
+                    },
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "show_feature",
+                          "value": false
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "cond",
+                "cond": [
+                  {
+                    "if": {
+                      "op": "equals",
+                      "left": {
+                        "op": "get",
+                        "var": "post_has_video"
+                      },
+                      "right": true
+                    },
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "show_feature",
+                          "value": false
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "return",
+                "value": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "set",
+      "var": "in_pop",
+      "value": {
+        "ep": "in_pop",
+        "userid": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "extPred"
+      }
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "not",
+            "value": {
+              "op": "or",
+              "values": [
+                {
+                  "op": "get",
+                  "var": "in_pop"
+                },
+                {
+                  "op": "equals",
+                  "left": {
+                    "op": "get",
+                    "var": "userid"
+                  },
+                  "right": 0
+                }
+              ]
+            }
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "return",
+                "value": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "set",
+      "var": "in_exp",
+      "value": {
+        "p": {
+          "op": "/",
+          "left": 1,
+          "right": 100
+        },
+        "unit": {
+          "op": "get",
+          "var": "post_id"
+        },
+        "op": "bernoulliTrial"
+      }
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "not",
+            "value": {
+              "op": "get",
+              "var": "in_exp"
+            }
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "return",
+                "value": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "equals",
+            "left": {
+              "op": "get",
+              "var": "post_has_photo"
+            },
+            "right": true
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "show_feature",
+                "value": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

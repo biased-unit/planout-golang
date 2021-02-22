@@ -1,0 +1,59 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "m",
+      "value": {
+        "min": 0,
+        "max": 100,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "randomInteger"
+      }
+    },
+    {
+      "op": "set",
+      "var": "n",
+      "value": {
+        "min": 1,
+        "max": 10,
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "randomInteger"
+      }
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "<",
+            "left": {
+              "op": "get",
+              "var": "n"
+            },
+            "right": {
+              "op": "get",
+              "var": "m"
+            }
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "m",
+                "value": 1000
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

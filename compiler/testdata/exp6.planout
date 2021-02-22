@@ -1,0 +1,25 @@
+skip_logging=true;
+enabled=false;
+
+if (extPred(userid=userid, ep="feat_exp")) {
+  test = bernoulliTrial(p=1/25, unit=userid);
+
+    if (test) {
+      enabled = bernoulliTrial(p=1/2, unit=userid);
+      skip_logging=false;
+    } else {
+      enabled = true;
+    }
+} else if (extPred(userid=userid,ep="feat_rollout")) {
+   enabled=true;
+}
+
+if (enabled) {
+  animation_type = "WINDOW_ANIMATION";
+} else {
+  animation_type="CONTROL";
+}
+
+if (skip_logging) {
+  return false;
+}
