@@ -1,0 +1,13 @@
+randomize = uniformChoice(choices=[0, 1], unit= userid);
+
+if (randomize == 0) { }
+  else{
+    max_delay = uniformChoice(choices=[500, 1000, 2000, 4000, 10000], unit=userid);
+    if (max_delay == 500) {
+      horizon_seconds = 1; max_packets = 9;
+    } else if (max_delay == 1000) { } else {
+        horizon_seconds = 10;
+        max_packets = 166;
+    }
+    limit_probability = uniformChoice(choices=[1, 5, 10, 20], unit=otherid);
+ }

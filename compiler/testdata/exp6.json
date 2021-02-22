@@ -1,0 +1,175 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "skip_logging",
+      "value": true
+    },
+    {
+      "op": "set",
+      "var": "enabled",
+      "value": false
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "userid": {
+              "op": "get",
+              "var": "userid"
+            },
+            "ep": "feat_exp",
+            "op": "extPred"
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "test",
+                "value": {
+                  "p": {
+                    "op": "/",
+                    "left": 1,
+                    "right": 25
+                  },
+                  "unit": {
+                    "op": "get",
+                    "var": "userid"
+                  },
+                  "op": "bernoulliTrial"
+                }
+              },
+              {
+                "op": "cond",
+                "cond": [
+                  {
+                    "if": {
+                      "op": "get",
+                      "var": "test"
+                    },
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "enabled",
+                          "value": {
+                            "p": {
+                              "op": "/",
+                              "left": 1,
+                              "right": 2
+                            },
+                            "unit": {
+                              "op": "get",
+                              "var": "userid"
+                            },
+                            "op": "bernoulliTrial"
+                          }
+                        },
+                        {
+                          "op": "set",
+                          "var": "skip_logging",
+                          "value": false
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "if": true,
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "enabled",
+                          "value": true
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "userid": {
+              "op": "get",
+              "var": "userid"
+            },
+            "ep": "feat_rollout",
+            "op": "extPred"
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "enabled",
+                "value": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "get",
+            "var": "enabled"
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "animation_type",
+                "value": "WINDOW_ANIMATION"
+              }
+            ]
+          }
+        },
+        {
+          "if": true,
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "animation_type",
+                "value": "CONTROL"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "get",
+            "var": "skip_logging"
+          },
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "return",
+                "value": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
