@@ -1,0 +1,153 @@
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "randomize",
+      "value": {
+        "choices": {
+          "op": "array",
+          "values": [
+            0,
+            1
+          ]
+        },
+        "unit": {
+          "op": "get",
+          "var": "userid"
+        },
+        "op": "uniformChoice"
+      }
+    },
+    {
+      "op": "cond",
+      "cond": [
+        {
+          "if": {
+            "op": "equals",
+            "left": {
+              "op": "get",
+              "var": "randomize"
+            },
+            "right": 0
+          },
+          "then": {
+            "op": "seq",
+            "seq": []
+          }
+        },
+        {
+          "if": true,
+          "then": {
+            "op": "seq",
+            "seq": [
+              {
+                "op": "set",
+                "var": "max_delay",
+                "value": {
+                  "choices": {
+                    "op": "array",
+                    "values": [
+                      500,
+                      1000,
+                      2000,
+                      4000,
+                      10000
+                    ]
+                  },
+                  "unit": {
+                    "op": "get",
+                    "var": "userid"
+                  },
+                  "op": "uniformChoice"
+                }
+              },
+              {
+                "op": "cond",
+                "cond": [
+                  {
+                    "if": {
+                      "op": "equals",
+                      "left": {
+                        "op": "get",
+                        "var": "max_delay"
+                      },
+                      "right": 500
+                    },
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "horizon_seconds",
+                          "value": 1
+                        },
+                        {
+                          "op": "set",
+                          "var": "max_packets",
+                          "value": 9
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "if": {
+                      "op": "equals",
+                      "left": {
+                        "op": "get",
+                        "var": "max_delay"
+                      },
+                      "right": 1000
+                    },
+                    "then": {
+                      "op": "seq",
+                      "seq": []
+                    }
+                  },
+                  {
+                    "if": true,
+                    "then": {
+                      "op": "seq",
+                      "seq": [
+                        {
+                          "op": "set",
+                          "var": "horizon_seconds",
+                          "value": 10
+                        },
+                        {
+                          "op": "set",
+                          "var": "max_packets",
+                          "value": 166
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "op": "set",
+                "var": "limit_probability",
+                "value": {
+                  "choices": {
+                    "op": "array",
+                    "values": [
+                      1,
+                      5,
+                      10,
+                      20
+                    ]
+                  },
+                  "unit": {
+                    "op": "get",
+                    "var": "otherid"
+                  },
+                  "op": "uniformChoice"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
