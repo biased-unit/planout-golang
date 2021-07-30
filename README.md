@@ -10,11 +10,9 @@ An excellent introduction can be found both in the original research, [Designing
 # So what is this ?
 This is an interpreter that provides the basic functionality for running [PlanOut](http://github.com/facebook/planout) interpreter code, allowing for integrating experiments into GoLang applications.
 
-This is not a full implementation of a complete [PlanOut](http://github.com/facebook/planout) stack, as such it lacks the compiler needed to turn [PlanOut](http://github.com/facebook/planout) DSL into the interpreter code, as well as the general test management tooling needed.
+There is also a compiler to turn PlanOut DSL into the code understood by the compiler.
 
 Much of the additional tooling for [PlanOut](http://github.com/facebook/planout) can be found the in original project.
-
-This code will however run [PlanOut](http://github.com/facebook/planout) programs in an idiomatic Golang fashion.
 
 # How to run a basic experiment ?
 Here's an example program that consumes compiled [PlanOut](http://github.com/facebook/planout) code and executes the associated experiment using the Golang interpreter.
