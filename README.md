@@ -198,7 +198,7 @@ func main() {
 The `planout-golang` compiler was written from scratch instead of using a generator. This requires more lines of code but
 gives better control over syntax and error messages. It also makes things like parsing JSON literals embedded in
 PlanOut code much simpler and less error-prone. Several bugs in the official compiler were fixed in this implementation.
-The bugs are mentioned in the list of incompatibilities.
+The bug fixes are mentioned in the list of incompatibilities.
 
 Internal names of lexical tokens and syntax tree nodes are mostly consistent with those in the official grammar file,
 except where it made sense to change them. For example, the official compiler uses `CONST` tokens for both string and
