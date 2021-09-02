@@ -3,9 +3,9 @@ package planout
 import (
 	"encoding/json"
 
-	"github.com/stitchfix/planout-golang/compiler"
-	"github.com/stitchfix/planout-golang/compiler/lexer"
-	"github.com/stitchfix/planout-golang/compiler/parser"
+	"github.com/biased-unit/planout-golang/compiler"
+	"github.com/biased-unit/planout-golang/compiler/lexer"
+	"github.com/biased-unit/planout-golang/compiler/parser"
 )
 
 func Compile(script string) (map[string]interface{}, error) {

@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/stitchfix/planout-golang/compiler/token"
+	"github.com/biased-unit/planout-golang/compiler/token"
 )
 
 const (
