@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stitchfix/planout-golang/compiler/ast"
-	"github.com/stitchfix/planout-golang/compiler/token"
+	"github.com/biased-unit/planout-golang/compiler/ast"
+	"github.com/biased-unit/planout-golang/compiler/token"
 )
 
 // precedence levels

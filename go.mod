@@ -1,4 +1,4 @@
-module github.com/stitchfix/planout-golang
+module github.com/biased-unit/planout-golang
 
 go 1.14
 

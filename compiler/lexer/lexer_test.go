@@ -3,7 +3,7 @@ package lexer
 import (
 	"testing"
 
-	"github.com/stitchfix/planout-golang/compiler/token"
+	"github.com/biased-unit/planout-golang/compiler/token"
 )
 
 func TestLexer_NextItem(t *testing.T) {

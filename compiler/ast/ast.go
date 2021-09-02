@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/stitchfix/planout-golang/compiler/token"
+	"github.com/biased-unit/planout-golang/compiler/token"
 )
 
 // Statement denotes a top-level node such as an if statement, assignment statement, or return statement

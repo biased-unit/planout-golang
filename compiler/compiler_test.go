@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/stitchfix/planout-golang/compiler/lexer"
-	"github.com/stitchfix/planout-golang/compiler/parser"
+	"github.com/biased-unit/planout-golang/compiler/lexer"
+	"github.com/biased-unit/planout-golang/compiler/parser"
 	"github.com/stretchr/testify/require"
 )
 

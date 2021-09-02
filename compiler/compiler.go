@@ -3,7 +3,7 @@ package compiler
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stitchfix/planout-golang/compiler/parser"
+	"github.com/biased-unit/planout-golang/compiler/parser"
 )
 
 type Compiler struct {

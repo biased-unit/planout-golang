@@ -3,8 +3,8 @@ package parser
 import (
 	"testing"
 
-	"github.com/stitchfix/planout-golang/compiler/ast"
-	"github.com/stitchfix/planout-golang/compiler/lexer"
+	"github.com/biased-unit/planout-golang/compiler/ast"
+	"github.com/biased-unit/planout-golang/compiler/lexer"
 )
 
 func TestAssignmentStatement(t *testing.T) {
