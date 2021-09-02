@@ -144,3 +144,194 @@ func main() {
 }
 
 ```
+
+# The Compiler
+
+This PlanOut compiler implementation was reverse engineered from the existing open-source JavaScript compiler. The
+official [JavaScript compiler](http://planout-editor.herokuapp.com/) was generated with
+the [Jison](http://zaa.ch/jison/) parser generator, based
+on [this grammar file](https://github.com/facebook/planout/blob/master/compiler/planout.jison)
+
+## Compiling and running a PlanOut script
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    planout "github.com/biased-unit/planout-golang"
+)
+
+func main() {
+	script := `id = uniformChoice(choices=[1, 2, 3, 4], unit=userid)`
+
+	code, err := planout.Compile(script)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	interpreter := planout.Interpreter{
+		Name: "test",
+		Salt: "test",
+		Inputs: map[string]interface{}{
+			"userid": 12345,
+		},
+		Outputs:    map[string]interface{}{},
+		Overrides:  map[string]interface{}{},
+		Code:         code,
+	}
+
+	outputs, ok := interpreter.Run()
+	if !ok {
+		log.Fatal("interpreter.Run() failed.")
+	}
+
+	fmt.Println(outputs)
+}
+
+```
+
+## Compiler details
+
+The `planout-golang` compiler was written from scratch instead of using a generator. This requires more lines of code but
+gives better control over syntax and error messages. It also makes things like parsing JSON literals embedded in
+PlanOut code much simpler and less error-prone. Several bugs in the official compiler were fixed in this implementation.
+The bugs are mentioned in the list of incompatibilities.
+
+Internal names of lexical tokens and syntax tree nodes are mostly consistent with those in the official grammar file,
+except where it made sense to change them. For example, the official compiler uses `CONST` tokens for both string and
+numeric literals, whereas this compiler has separate `STRING` and `NUMBER` tokens. This helps with simplifying the
+parser.
+
+### Incompatibilities with official compiler
+
+The syntax of this compiler is almost identical to that of the official implementation. However, there are some key
+differences that make the two compilers not 100% compatible.
+
+Incompatibilities come in two types: forwards incompatibilities and backwards incompatibilities.
+
+A forwards incompatibility means that a script which compiles using the `planout-golang` compiler won't
+compile using the official compiler. 
+A backwards incompatibility means that a script which compiles using the official compiler won't compile using the
+`planout-golang` compiler.
+
+##### Dots in identifiers
+
+In the `planout-golang` compiler, identifiers may contain the character `.`, which is not allowed by the official compiler.
+
+For example, the following is valid PlanOut using the `planout-golang` compiler:
+
+```
+button.color = uniformChoice(choices=["red", "blue"], unit=userid)
+```
+
+#### Whitespace
+
+Whitespace is completely ignored by the `planout-golang` compiler, but is part of the official compiler's syntax in some
+rare cases. For example, the following compiles using `planout-golang`, but fails using the official compiler:
+
+```
+x = 1+1;
+```
+
+Using the official compiler, a space is required after the `+` token:
+
+```
+x = 1+ 1;
+```
+
+This is only true for the `+` and `-` infix operators. For example `x=1*1;` is a valid PlanOut statement
+according to the official compiler. It doesn't really make sense to treat whitespace inconsistently like this, so this
+behavior was not replicated in `planout-golang`.
+
+#### Comments
+
+`planout-golang` supports in-line comments using the `#` symbol to indicate the start of a comment. Anything after and
+including the `#` symbol in a line is ignored by the lexer. The official compiler does not support comments.
+
+For example, the following is a valid PlanOut script according to the `planout-golang` compiler:
+
+```
+# This is an experiment that randomizes the number of lines to display under a headline in the search results page.
+
+num_lines_to_display = uniformChoice(choices=[1,2,3], unit=userid) # sets the number of lines to display
+```
+
+#### Assignment statements in switch/case blocks
+
+The official PlanOut compiler has switch/case statements but does not allow a case block to start with an assignment 
+statement. Because of the way the grammar file was written, case blocks can only be `if`, `switch` or `return` statements.
+
+For example, the following PlanOut script is valid using `planout-golang` but not using the official compiler:
+
+```
+switch {
+    country == "US" => my_param = uniformChoice(choices=[0, 1], unit=client_id);
+    country == "JP" => my_param = uniformChoice(choices=[2, 3], unit=client_id);
+}
+```
+
+After the `=>` token, the official compiler only allows a `SWITCH`, `RETURN`, or `IF` token. If using the official
+compiler, the following workaround can achieve the same result as the above exmaple:
+
+```
+switch {
+    country == "US" => if (true) { my_param = uniformChoice(choices=[0, 1], unit=client_id); };
+    country == "JP" => if (true) { my_param = uniformChoice(choices=[2, 3], unit=client_id); };
+}
+```
+
+#### JSON literals
+
+The official compiler allows for so-called JSON literals by prefixing with an `@` token. These JSON literals can only contain
+literal arrays, maps, strings and numbers (i.e. no identifiers or other expressions)
+They can also be indexed like a normal map or array. This is a nice way to allow for JSON-valued parameters but also a
+lightweight implementation of a hash map.
+
+For example:
+
+```
+my_param = @{"a": 1, "b": [2, 3, "four"]}
+my_other_param = my_param["b"]
+```
+
+Is valid PlanOut that compiles with both the official compiler and `planout-golang`.
+
+However, the actual implementation of JSON literals in the official compiler is far more permissive than the JSON
+standard and is quite buggy. It allows for all kinds of nonsense such as:
+
+```
+my_param = @{{"a": 1}: "b"}
+```
+
+One might think it's useful to have an object-keyed object. But this code compiles to:
+
+```json
+{
+  "op": "seq",
+  "seq": [
+    {
+      "op": "set",
+      "var": "my_param",
+      "value": {
+        "op": "literal",
+        "value": {
+          "[object Object]": "b"
+        }
+      }
+    }
+  ]
+}
+```
+
+So the information in the key has been lost and replaced with the string "[object Object]". This kind of thing should
+not be allowed to happen.
+
+Slightly less egregiously, the official compiler allows for single-quoted strings in JSON literals.
+
+The `planout-golang` compiler only allows for actual JSON in a JSON literal. Internally, it relies on Go's `encoding/json`
+package to determine what is or is not valid JSON. So the `@` token can be followed by a JSON object, array, string,
+boolean, number, or null. This means that strings inside JSON literals use double quotes only, and JSON literal objects
+must use strings for keys.
