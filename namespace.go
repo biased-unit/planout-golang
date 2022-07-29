@@ -15,11 +15,11 @@ type SimpleNamespace struct {
 	PrimaryUnit        string
 	NumSegments        int
 	Inputs             map[string]interface{}
-	segmentAllocations map[uint64]string
-	availableSegments  []int
-	currentExperiments map[string]*Interpreter
-	defaultExperiment  *Interpreter
-	selectedExperiment uint64
+	SegmentAllocations map[uint64]string
+	AvailableSegments  []int
+	CurrentExperiments map[string]*Interpreter
+	DefaultExperiment  *Interpreter
+	SelectedExperiment uint64
 }
 
 func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs map[string]interface{}) SimpleNamespace {
@@ -40,21 +40,42 @@ func NewSimpleNamespace(name string, numSegments int, primaryUnit string, inputs
 		PrimaryUnit:        primaryUnit,
 		NumSegments:        numSegments,
 		Inputs:             inputs,
-		segmentAllocations: make(map[uint64]string),
-		availableSegments:  avail,
-		currentExperiments: make(map[string]*Interpreter),
-		selectedExperiment: uint64(numSegments + 1),
-		defaultExperiment:  noop,
+		SegmentAllocations: make(map[uint64]string),
+		AvailableSegments:  avail,
+		CurrentExperiments: make(map[string]*Interpreter),
+		SelectedExperiment: uint64(numSegments + 1),
+		DefaultExperiment:  noop,
 	}
 }
 
-func (n *SimpleNamespace) Run() *Interpreter {
-	interpreter := n.defaultExperiment
+// SetInputs方法可以手动设置namespace的输入值
+func (n *SimpleNamespace) SetInputs(inputs map[string]interface{}) {
+	for _, exp := range n.CurrentExperiments {
+		exp.Inputs = inputs
+	}
+	n.DefaultExperiment.Inputs = inputs
+	n.Inputs = inputs
+}
+// ReSet方法重置该namespace中的实验信息
+func (n *SimpleNamespace) ReSet() {
+	// 遍历namespace下所有experiments，进行重置
+	for _, exp := range n.CurrentExperiments {
+		exp.ReSet()
+	}
+	defaultConfig := n.DefaultExperiment.Outputs
+	n.DefaultExperiment.ReSet()
+	n.DefaultExperiment.Outputs = defaultConfig
+	n.Inputs = make(map[string]interface{})
+	n.SelectedExperiment = uint64(n.NumSegments + 1)
+}
 
-	if name, ok := n.segmentAllocations[n.getSegment()]; ok {
-		interpreter = n.currentExperiments[name]
-		interpreter.Name = n.Name + "-" + interpreter.Name
-		interpreter.Salt = n.Name + "." + interpreter.Name
+func (n *SimpleNamespace) Run() *Interpreter {
+	interpreter := n.DefaultExperiment
+
+	if name, ok := n.SegmentAllocations[n.getSegment()]; ok {
+		interpreter = n.CurrentExperiments[name]
+		//interpreter.Name = n.Name + "-" + interpreter.Name
+		//interpreter.Salt = n.Name + "." + interpreter.Name
 	}
 
 	interpreter.Run()
@@ -62,45 +83,46 @@ func (n *SimpleNamespace) Run() *Interpreter {
 }
 
 func (n *SimpleNamespace) AddDefaultExperiment(defaultExperiment *Interpreter) {
-	n.defaultExperiment = defaultExperiment
+	n.DefaultExperiment = defaultExperiment
 }
 
 func (n *SimpleNamespace) AddExperiment(name string, interpreter *Interpreter, segments int) error {
-	avail := len(n.availableSegments)
+	avail := len(n.AvailableSegments)
 	if avail < segments {
 		return fmt.Errorf("Not enough segments available %v to add the new experiment %v\n", avail, name)
 	}
 
-	if _, ok := n.currentExperiments[name]; ok {
+	if _, ok := n.CurrentExperiments[name]; ok {
 		return fmt.Errorf("There is already and experiment called %s\n", name)
 	}
 
 	n.allocateExperiment(name, segments)
 
-	n.currentExperiments[name] = interpreter
+	n.CurrentExperiments[name] = interpreter
 	return nil
 }
 
 func (n *SimpleNamespace) RemoveExperiment(name string) error {
-	_, exists := n.currentExperiments[name]
+	_, exists := n.CurrentExperiments[name]
 	if !exists {
 		return fmt.Errorf("Experiment %v does not exists in the namespace\n", name)
 	}
 
 	segmentsToFree := make([]int, 0, n.NumSegments)
-	for i := range n.segmentAllocations {
-		if n.segmentAllocations[i] == name {
+	for i := range n.SegmentAllocations {
+		if n.SegmentAllocations[i] == name {
 			segmentsToFree = append(segmentsToFree, int(i))
+			delete(n.SegmentAllocations, i)
 		}
 	}
 
 	for i := range segmentsToFree {
-		n.availableSegments = append(n.availableSegments, segmentsToFree[i])
+		n.AvailableSegments = append(n.AvailableSegments, segmentsToFree[i])
 	}
 
-	sort.Ints(n.availableSegments)
+	sort.Ints(n.AvailableSegments)
 
-	delete(n.currentExperiments, name)
+	delete(n.CurrentExperiments, name)
 	return nil
 }
 
@@ -115,8 +137,8 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	}
 
 	// Compile Sample operator
-	var availableSegmentsAsInterface []interface{} = make([]interface{}, len(n.availableSegments))
-	for i, d := range n.availableSegments {
+	var availableSegmentsAsInterface = make([]interface{}, len(n.AvailableSegments))
+	for i, d := range n.AvailableSegments {
 		availableSegmentsAsInterface[i] = d
 	}
 
@@ -132,15 +154,15 @@ func (n *SimpleNamespace) allocateExperiment(name string, segments int) {
 	// Remove segment from available_segments
 	for i := range shuffle {
 		j := shuffle[i].(int)
-		n.segmentAllocations[uint64(j)] = name
-		n.availableSegments = deallocateSegments(n.availableSegments, j)
+		n.SegmentAllocations[uint64(j)] = name
+		n.AvailableSegments = deallocateSegments(n.AvailableSegments, j)
 	}
 }
 
 func (n *SimpleNamespace) getSegment() uint64 {
 
-	if n.selectedExperiment != uint64(n.NumSegments+1) {
-		return n.selectedExperiment
+	if n.SelectedExperiment != uint64(n.NumSegments+1) {
+		return n.SelectedExperiment
 	}
 
 	// generate random integer min=0, max=num_segments, unit=primary_unit
@@ -160,8 +182,8 @@ func (n *SimpleNamespace) getSegment() uint64 {
 	args["max"] = n.NumSegments - 1
 	args["unit"] = n.Inputs[n.PrimaryUnit]
 	s := &randomInteger{}
-	n.selectedExperiment = s.execute(args, expt).(uint64)
-	return n.selectedExperiment
+	n.SelectedExperiment = s.execute(args, expt).(uint64)
+	return n.SelectedExperiment
 }
 
 func deallocateSegments(allocated []int, segmentToRemove int) []int {
